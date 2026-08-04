@@ -86,9 +86,9 @@ Aucun fichier PHP supplémentaire, aucune classe, aucun namespace. Toute la logi
 
 ---
 
-### 2. `index.php` — PRINCIPAL (gabarit unique, fallback universel)
+### 2. `index.php` — PRINCIPAL (gabarit unique, fallback selon hiérarchie WordPress)
 
-**Rôle** : seul template présent dans le dépôt. Sélectionné pour tous les types de contenu selon la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`). Sert de fallback si templates spécialisés absents.
+**Rôle** : seul template présent dans le dépôt. Peut être sélectionné pour différents types de contenu selon la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`). Sert de fallback si templates spécialisés (`single.php`, `archive.php`, etc.) absents du dépôt.
 
 **Lignes critiques** :
 
@@ -100,7 +100,7 @@ Aucun fichier PHP supplémentaire, aucune classe, aucun namespace. Toute la logi
 | **4** | `<?php post_class(); ?>` | Moyenne | Classes CSS contextuelles — générées par WordPress selon type/statut |
 | **5** | `<?php the_title(); ?>` | Haute | Titre du post — sortie filtrée par WordPress |
 | **6** | `<?php the_content(); ?>` | Haute | Contenu du post — sortie filtrée + shortcodes exécutés par WordPress |
-| **9** | `<p>Aucun contenu.</p>` | Moyenne | Fallback si `have_posts()` = false — même message pour toutes les listes vides (`PROUVÉ_CODE`) ; distinction 404/vide dépend de sélection `index.php` par WordPress pour ces cas (hiérarchie WP hors dépôt — `HYPOTHÈSE`) |
+| **9** | `<p>Aucun contenu.</p>` | Moyenne | Fallback si `have_posts()` = false — même message pour toutes les listes vides (`PROUVÉ_CODE`) ; distinction 404/vide dépend de sélection `index.php` par WordPress selon sa hiérarchie pour ces cas (hors dépôt — `HYPOTHÈSE`) |
 | **12** | `<?php get_footer(); ?>` | Haute | Inclut `footer.php` — si absent, page sans pied ni `</html>` |
 
 **Points de vigilance** :
@@ -308,9 +308,8 @@ index.php exécuté
 - Changement d'entité ou mention légale exige une PR
 - Non scalable pour un thème multi-client
 
-**Résolution** :
-- Externaliser la valeur du copyright dans les options WordPress, plutôt que de la coder en dur
-- Pour un pilote, acceptable ; pour production multi-client, à adresser
+**Contexte** :
+- Pour un pilote, acceptable ; pour production multi-client, externaliser via les options WordPress serait une amélioration recommandée
 
 ---
 

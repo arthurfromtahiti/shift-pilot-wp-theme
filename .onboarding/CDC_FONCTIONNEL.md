@@ -204,12 +204,12 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
 | Risque | Preuve locale | Condition/Dépendance externe | Impact (si condition vraie) | Mitigation |
 |---|---|---|---|---|
 | **jQuery 1.12.4 — vulnérabilités documentées** | Version `1.12.4` épinglée (`functions.php:19`) — `PROUVÉ_CODE` | Exploitabilité dépend de plugins utilisant jQuery (`HYPOTHÈSE` — plugins hors dépôt) | XSS/prototype pollution si exploité via plugins | Montée vers jQuery 3.x avant production réelle |
-| **CDN jQuery sans fallback** | Enregistrement sans fallback local (`functions.php:17-23`) — `PROUVÉ_CODE` | Panne CDN `code.jquery.com` (indépendant du dépôt) | JavaScript silencieux manquant si CDN indisponible | Héberger jQuery localement ou ajouter fallback |
-| **CDN jQuery sans SRI** | Pas de hash SRI dans l'enregistrement (`functions.php:17-23`) — `PROUVÉ_CODE` | Compromission CDN (risque externe) | Exécution de code malveillant si CDN compromis | Ajouter filtre `script_loader_tag` + hash SRI |
-| **Cache CSS oublié** | Versioning manuel (`functions.php:13`, `style.css:6`) — `PROUVÉ_CODE` | Développeur oublie d'incrémenter la version (processus) | Modifications CSS invisibles en production (cache navigateur/CDN) | Automatiser ou documenter rigoureusement le versioning CSS |
-| **Ordre d'exécution jQuery** | Désinscription avec priorité par défaut (`functions.php:16`, priorité 10) — `PROUVÉ_CODE` | Plugin déclarant `jquery` avant thème (`HYPOTHÈSE` — plugins hors dépôt) | Dépendance jQuery du plugin non satisfaite | Abaisser priorité du callback thème ou vérifier plugin |
-| **Rendu indifférencié 404** | Seul `index.php` dans le dépôt (`VÉRIFIÉ_CODE`) | WordPress sélectionne `index.php` pour 404 (hiérarchie WP — `HYPOTHÈSE`) | Mauvais signal SEO, UX dégradée pour les URLs invalides | Créer `404.php` avec message distinct |
-| **Incohérence `post-thumbnails`** | Capacité déclarée (`functions.php:9`), jamais affichée (`index.php` — `PROUVÉ_CODE`) | N/A — limitation interne du thème | Attente utilisateur non satisfaite (éditeurs chargent images, jamais affichées) | Retirer ou consommer la capacité |
+| **CDN jQuery sans fallback** | Enregistrement sans fallback local (`functions.php:17-23`) — `PROUVÉ_CODE` | Panne CDN `code.jquery.com` (indépendant du dépôt) — `HYPOTHÈSE_RISQUE` | Absence de jQuery en production si CDN indisponible | Héberger jQuery localement ou ajouter fallback |
+| **CDN jQuery sans SRI** | Pas de hash SRI dans l'enregistrement (`functions.php:17-23`) — `PROUVÉ_CODE` | Compromission CDN (risque externe) — `HYPOTHÈSE_RISQUE` | Exécution de code malveillant si CDN compromis | Ajouter filtre `script_loader_tag` + hash SRI |
+| **Cache CSS oublié** | Versioning manuel (`functions.php:13`, `style.css:6`) — `PROUVÉ_CODE` | Développeur oublie d'incrémenter la version (risque de processus humain) | Modifications CSS invisibles en production (cache navigateur/CDN) | Automatiser ou documenter rigoureusement le versioning CSS |
+| **Ordre d'exécution jQuery** | Désinscription avec priorité par défaut (`functions.php:16`, priorité 10) — `PROUVÉ_CODE` | Plugin enregistré avec priorité < 10 sur `wp_enqueue_scripts` déclare une dépendance sur `'jquery'` (hors dépôt — `HYPOTHÈSE`) | Dépendance jQuery du plugin non satisfaite ou comportement indéterminé | Tester avec plugins actifs ; abaisser priorité du callback thème ou vérifier ordre plugins |
+| **Rendu indifférencié 404** | Seul `index.php` dans le dépôt (`VÉRIFIÉ_CODE`) | WordPress sélectionne `index.php` comme fallback pour 404 selon hiérarchie (hors dépôt — `HYPOTHÈSE`) | Mauvais signal SEO, UX dégradée pour les URLs invalides (pas de distinction 404/vide) | Créer `404.php` avec message distinct et lien d'accueil |
+| **Incohérence `post-thumbnails`** | Capacité déclarée (`functions.php:9`), jamais affichée (`index.php` — `PROUVÉ_CODE` — aucun appel à `the_post_thumbnail()`) | N/A — limitation interne du thème | Attente utilisateur non satisfaite (éditeurs chargent images en admin, jamais affichées frontend) | Retirer la déclaration (`functions.php:9`) ou ajouter appel à `the_post_thumbnail()` dans `index.php` |
 
 ---
 
@@ -219,16 +219,16 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
 
 1. **Requête HTTP** : Visiteur arrive sur `/?` (ou `/index.php`)
 2. **Routing WordPress** : WordPress détermine que la page d'accueil affiche les posts récents (comportement WP, hors dépôt — `HYPOTHÈSE`)
-3. **Sélection du template** : WordPress sélectionne `index.php` (seul template présent, `VÉRIFIÉ_CODE`)
-4. **Rendu du gabarit** (`VÉRIFIÉ_CODE`) :
+3. **Sélection du template** : WordPress sélectionne `index.php` (seul template présent, `VÉRIFIÉ_CODE`). Que WordPress sélectionne effectivement ce template pour tous les types de contenu dépend de la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`)
+4. **Rendu du gabarit** (`VÉRIFIÉ_CODE` pour la structure) :
    - `get_header()` → inclut `header.php` (`PROUVÉ_CODE`), produit doctype + head + `<body>` + en-tête
-   - Boucle (`have_posts()` + `while` + `the_post()`) → pour chaque post : titre + contenu (`PROUVÉ_CODE`, contenu généré par WordPress)
+   - Boucle (`have_posts()` + `while` + `the_post()`) → pour chaque post : titre + contenu (appels `PROUVÉ_CODE` en `index.php:3-10`, contenu généré et filtré par WordPress — `HYPOTHÈSE_EFFET`)
    - Fallback vide : si aucun post (rare sur accueil), `<p>Aucun contenu.</p>` (`PROUVÉ_CODE`)
    - `get_footer()` → inclut `footer.php` (`PROUVÉ_CODE`), produit pied + fermeture `</body></html>`
 5. **Assets injectés** (enregistrement du thème → injection WordPress) :
-   - `wp_head()` → styles (`style.css` via `get_stylesheet_uri()` — `PROUVÉ_CODE`, injection via WordPress — `HYPOTHÈSE`), meta-tags (WordPress), `<title>` (déclaration `add_theme_support` — `PROUVÉ_CODE`, injection via WordPress — `HYPOTHÈSE`)
-   - `wp_footer()` → jQuery CDN enregistré par thème (`PROUVÉ_CODE`), injection et rendu dans le flux HTML par WordPress (`HYPOTHÈSE`)
-6. **Réponse** : document HTML complet, rendu au navigateur. Contenu réel et comportement plugins dépendent de WordPress et de l'environnement réel (hors dépôt).
+   - `wp_head()` → styles (`style.css` via `get_stylesheet_uri()` — `PROUVÉ_CODE` pour l'appel d'enqueue, injection comme balise `<link>` via WordPress — `HYPOTHÈSE_EFFET`), meta-tags (WordPress), `<title>` (déclaration `add_theme_support` — `PROUVÉ_CODE` en `functions.php:8`, contenu et injection via WordPress — `HYPOTHÈSE_EFFET`)
+   - `wp_footer()` → jQuery CDN enregistré par thème (`PROUVÉ_CODE` en `functions.php:17-23`), injection comme balise `<script>` et rendu dans le flux HTML par WordPress (`HYPOTHÈSE_EFFET`)
+6. **Réponse** : document HTML complet, rendu au navigateur. Contenu réel, filtrage, exécution de shortcodes, injection des assets et comportement plugins dépendent de WordPress et de l'environnement réel (hors dépôt — `HYPOTHÈSE` ou `INCONNU`).
 
 ---
 

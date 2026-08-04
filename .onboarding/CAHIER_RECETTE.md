@@ -2,7 +2,9 @@
 
 ## Introduction
 
-Ce document liste les parcours à tester pour valider le bon fonctionnement du thème après déploiement ou modification. Aucun test automatisé n'existe (couverture 0 % — `README.md:13`, `TESTING_AUDIT.md`) — la recette est intégralement manuelle.
+Ce document liste les parcours de test pour valider le bon fonctionnement du thème après déploiement ou modification. Aucun test automatisé n'existe (couverture 0 % — `README.md:13`, `TESTING_AUDIT.md`) — la recette est intégralement manuelle.
+
+**Importante distinction** : ce cahier teste **le code du thème versionné** (appels d'API WordPress, structure HTML, enregistrement des assets) et **observe** le comportement généré par WordPress et l'environnement réel (valeurs injectées, contenu filtré, hiérarchie des templates). Les tests marqués ✅ valident le thème ; ceux marqués 🔍 observent des effets WordPress hors du périmètre du thème.
 
 **Durée estimée** : 15–30 min selon le périmètre (vérification simple vs. diagnostic complet).
 
@@ -39,20 +41,20 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
    - [ ] Aucune erreur JavaScript (pas de `Uncaught ReferenceError: jQuery is not defined`, pas de 404 sur ressources)
    - [ ] Aucune erreur de réseau sur les assets
 
-4. **DevTools** → onglet **Network** :
-   - [ ] `style.css` chargé avec statut HTTP 200 ou 304 (pas 404)
-   - [ ] `jquery-1.12.4.min.js` chargé depuis `code.jquery.com` avec statut 200 ou 304 (pas 404)
-   - [ ] Vérifier la chaîne `?ver=1.0.2` dans l'URL du CSS (cache-buster)
-   - [ ] Vérifier la chaîne `?ver=1.12.4` dans l'URL de jQuery
+4. **DevTools** → onglet **Network** (vérification du chargement des assets enregistrés par le thème) :
+   - [ ] `style.css` chargé avec statut HTTP 200 ou 304 (pas 404) — correspond à l'enqueue du thème (`functions.php:13` — `PROUVÉ_CODE`)
+   - [ ] `jquery-1.12.4.min.js` chargé depuis `code.jquery.com` avec statut 200 ou 304 (pas 404) — correspond à l'enqueue du thème (`functions.php:17-23` — `PROUVÉ_CODE`)
+   - [ ] Vérifier la chaîne `?ver=1.0.2` dans l'URL du CSS (cache-buster correspondant à `functions.php:13` — `PROUVÉ_CODE`)
+   - [ ] Vérifier la chaîne `?ver=1.12.4` dans l'URL de jQuery (version enregistrée — `PROUVÉ_CODE`)
 
-5. **DevTools** → onglet **Inspector** / **Elements** (ou équivalent) — inspecter `<head>` :
-   - [ ] Balise `<title>` présente (non vide, contient le titre de la page)
-   - [ ] Meta charset UTF-8 : `<meta charset="utf-8">`
-   - [ ] Balise `<link>` pour `style.css` présente
-   - [ ] **Pas** de balise `<script>` pour jQuery en `<head>` (doit être en footer)
+5. **DevTools** → onglet **Inspector** / **Elements** — observation de l'injection WordPress (non pas validation du thème) :
+   - [ ] 🔍 **Observation** : Balise `<title>` présente (non vide) — le thème déclare `add_theme_support('title-tag')` (`functions.php:8` — `PROUVÉ_CODE`) ; le contenu et l'injection sont responsabilité de WordPress (`HYPOTHÈSE_EFFET`)
+   - [ ] 🔍 **Observation** : Meta charset UTF-8 : `<meta charset="utf-8">` ou équivalent — injection WordPress (`HYPOTHÈSE_EFFET`)
+   - [ ] ✅ Balise `<link>` pour `style.css` présente — validée dans Network au-dessus
+   - [ ] ✅ **Pas** de balise `<script>` pour jQuery en `<head>` — le thème enregistre jQuery en footer (`functions.php:17-23`, `footer.php:2` — `PROUVÉ_CODE`)
 
-6. **DevTools** → inspecter `<footer>` :
-   - [ ] Balise `<script>` de jQuery visible à la fin du `</body>` (avant la fermeture)
+6. **DevTools** → inspecter avant `</body>` (vérification que jQuery est injecté en footer comme enregistré) :
+   - [ ] Balise `<script src="https://code.jquery.com/jquery-1.12.4.min.js..."></script>` visible avant la fermeture `</body>` — confirmé en Network au-dessus
 
 ### Critères de passage
 
@@ -75,19 +77,19 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
 1. **Navigateur** : cliquer sur un article depuis la page d'accueil (ex. `/blog/mon-article/` — structure d'URL dépend de WordPress et du site réel, peut varier)
 2. **Inspection visuelle** :
    - [ ] Page s'affiche sans erreur
-   - [ ] Titre de l'article visible en `<h2>` (extrait du post)
-   - [ ] Contenu de l'article visible (le corps du post)
-   - [ ] Aucun caractère non échappé ni balise HTML cassée dans le contenu
-   - [ ] Chrome (en-tête/pied) identique à la page d'accueil
+   - [ ] 🔍 **Observation** : Titre de l'article visible en `<h2>` (rendu via `the_title()` — `index.php:5` — `PROUVÉ_CODE`) ; contenu du titre généré par WordPress
+   - [ ] ✅ Contenu de l'article visible (via `the_content()` — `index.php:6` — `PROUVÉ_CODE` ; filtrage et shortcodes exécutés par WordPress — `HYPOTHÈSE_EFFET`)
+   - [ ] ✅ Aucun caractère non échappé ni balise HTML cassée — `the_content()` applique les filtres WordPress d'échappement (`PROUVÉ_CODE` pour l'appel API, filtrage = `HYPOTHÈSE_EFFET`)
+   - [ ] ✅ Chrome (en-tête/pied) identique à la page d'accueil — structure de gabarit unique (`PROUVÉ_CODE`)
 
 3. **DevTools** → **Inspector** → éléments du contenu :
-   - [ ] Balise `<h2>` contient le titre du post
-   - [ ] Classe `post_class()` appliquée (ex. `<article class="post-123 type-post status-publish">` — les classes varient selon le contenu réel)
-   - [ ] Contenu dans une `<div>` ou balise de section
+   - [ ] ✅ Balise `<h2>` contient le titre du post — validé au-dessus
+   - [ ] 🔍 **Observation** : Classe `post_class()` appliquée (ex. `<article class="post-123 type-post status-publish">`) — le thème appelle `post_class()` (`index.php:4` — `PROUVÉ_CODE`) ; contenu des classes généré par WordPress selon contexte (`HYPOTHÈSE_EFFET`)
+   - [ ] ✅ Contenu rendu par la boucle WordPress (via `have_posts()` + `the_post()` — `index.php:3-10` — `PROUVÉ_CODE`)
 
-4. **Observation** (si du contenu avec caractères spéciaux existe) :
-   - [ ] Les accents (é, è, ê, etc.) s'affichent correctement (charset UTF-8 effectif)
-   - [ ] Les guillemets, tirets, caractères spéciaux sont échappés (pas de `&lt;`, `&gt;` visibles pour du contenu normal)
+4. **Observation** (vérification que l'encodage UTF-8 fonctionne) :
+   - [ ] 🔍 Les accents (é, è, ê, etc.) s'affichent correctement — le thème appelle `bloginfo('charset')` (`header.php:4` — `PROUVÉ_CODE`) ; valeur et effet = WordPress (`HYPOTHÈSE_EFFET`)
+   - [ ] 🔍 Les guillemets, tirets, caractères spéciaux sont échappés (pas de `&lt;`, `&gt;` visibles pour du contenu normal) — filtrage par `the_content()` API WordPress
 
 ### Critères de passage
 
@@ -99,61 +101,80 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
 
 ## Test #3 : Boucle vide (sans contenu) — OBSERVATION CONDITIONNELLE
 
-**Objectif** : vérifier que le fallback `<p>Aucun contenu.</p>` s'affiche quand la boucle WordPress ne retourne aucun article/page.
+**Objectif** : observer que le fallback `<p>Aucun contenu.</p>` s'affiche quand la boucle WordPress ne retourne aucun article/page.
 
-**Prérequis** : cette observation ne s'applique que si WordPress route une URL valide mais sans contenu vers `index.php` (comportement dépendant de la configuration WordPress hors dépôt — `HYPOTHÈSE`).
+**⚠️ CONDITION** : cette observation s'applique **seulement si** WordPress route une URL valide mais sans contenu vers `index.php` (comportement dépendant de la configuration WordPress hors dépôt — `HYPOTHÈSE`). Cette condition n'est vérifiable que si le site réel possède une archive vide (ex. catégorie vide) accessible.
 
 ### Prérequis
 
-- URL valide mais sans contenu : ex. `/category/vide/` si catégorie vide, ou toute archive sans articles
-- ℹ️ Impossible de tester sans configuration WordPress réelle et archive vide disponible
+- URL valide sans contenu : ex. `/category/vide/` si catégorie vide, ou toute archive sans articles publiés
+- ℹ️ Si aucune archive vide n'existe sur le site réel, ce test n'est pas applicable
 
 ### Étapes
 
-1. **Si une archive vide peut être créée** : accéder à une URL d'archive valide mais vide (ex. catégorie vide, archive par auteur sans articles)
-2. **Observation visuelle** :
-   - [ ] Message `<p>Aucun contenu.</p>` observé
-   - [ ] Chrome du site toujours visible (pas de page blanche)
-   - ⚠️ **Note** : ce message s'affiche aussi pour les URLs inexistantes (404) via le fallback WordPress — voir Test #4 pour cette distinction
+1. **Vérification locale du code** (toujours applicable) :
+   - [ ] Lire `index.php:9` : fallback `<p>Aucun contenu.</p>` présent (`PROUVÉ_CODE`) pour le cas `have_posts() = false`
+   - [ ] Lire `index.php:3-10` : la boucle et le fallback sont la seule logique de rendu (`PROUVÉ_CODE`)
+   - **Conclusion** : le thème déclare bien le fallback pour les listes vides.
 
-3. **DevTools** → **Console** :
+2. **Si une archive vide peut être créée et testée** : accéder à une URL d'archive valide mais vide
+3. **Observation visuelle** (conditionnelle) :
+   - [ ] 🔍 Message `<p>Aucun contenu.</p>` observé (si WordPress sélectionne `index.php` pour cette URL — `HYPOTHÈSE`)
+   - [ ] 🔍 Chrome du site visible (en-tête/pied) — la structure du thème reste intacte
+   - ⚠️ **Note** : ce message s'affiche **aussi** pour les URLs inexistantes (404) via le fallback WordPress — voir Test #4 pour cette distinction
+
+4. **DevTools** → **Console** (si test s'applique) :
    - [ ] Aucune erreur PHP, aucune erreur JavaScript
 
 ### Statut de validation
 
-⚠️ **Observation**, pas de critère de passage — le code du thème (`index.php:9`) déclare bien le fallback (`PROUVÉ_CODE`), mais son apparition dépend de WordPress qui retourne une boucle vide (`HYPOTHÈSE`). Test applicable seulement si archive vide disponible et routable via `index.php`.
+✅ **Code du thème valide** : fallback présent (`index.php:9` — `PROUVÉ_CODE`).
+
+⚠️ **Observation frontend** : son apparition dépend de WordPress qui retourne une boucle vide et sélectionne `index.php` (hors dépôt — `HYPOTHÈSE`). Test observable seulement si archive vide disponible et routable via `index.php`.
 
 ---
 
-## Test #4 : URL inexistante (404 — LIMITATION CONNUE, HORS PÉRIMÈTRE)
+## Test #4 : URL inexistante (404 — OBSERVATION CONDITIONNELLE, HORS PÉRIMÈTRE THÈME)
 
-**Objectif** : observer le comportement du thème sur URLs inexistantes (limité — pas de `404.php`).
+**Objectif** : observer le rendu du thème sur URLs inexistantes (limitation connue — pas de `404.php` dans le dépôt).
 
-**⚠️ NOTE IMPORTANTE** : le code HTTP 404 et son envoi au navigateur sont gérés par le cœur WordPress, **hors du périmètre versionné de ce thème**. Ce test ne valide que le rendu du thème, pas la couche HTTP.
+**⚠️ NOTES ESSENTIELLES** :
+1. Le code HTTP 404 et son envoi au navigateur sont gérés par le cœur WordPress (**hors du périmètre versionné de ce thème** — `HYPOTHÈSE` ou `INCONNU`)
+2. Le rendu de la page (ce que voit le visiteur) dépend de la hiérarchie WordPress qui sélectionne `index.php` en fallback (`HYPOTHÈSE`)
+3. Ce test ne valide rien du thème — il documente seulement une limitation connue
 
 ### Prérequis
 
-- URL inexistante (ex. `/page-qui-nexiste-pas/`)
+- URL inexistante valide (ex. `/page-qui-nexiste-pas/`)
 
 ### Étapes
 
-1. **Navigateur** : accéder à l'URL inexistante
-2. **Inspection visuelle** :
-   - [ ] Page s'affiche sans erreur 500 (rendu thème en place)
-   - [ ] Message affiché : `<p>Aucun contenu.</p>` (identique au Test #3)
-   - [ ] ⚠️ **LIMITATION DOCUMENTÉE** : pas de message distinct, pas de lien vers l'accueil — c'est une limitation du thème, pas une erreur
+1. **Vérification locale du code** (toujours applicable) :
+   - [ ] Lire inventaire du dépôt : aucun `404.php` présent (`VÉRIFIÉ_CODE`)
+   - [ ] Lire `index.php` : seul template pour tous les types de contenus (`PROUVÉ_CODE`)
+   - **Conclusion** : le thème n'offre **pas** de page d'erreur personnalisée — c'est une limitation volontaire.
 
-3. **DevTools** → **Network** → premier élément (la page elle-même) :
-   - [ ] Observation optionnelle : code HTTP réponse (200, 404, etc.)
-   - [ ] ℹ️ Le thème ne contrôle pas ce code — c'est WordPress qui l'envoie
+2. **Si WordPress sélectionne `index.php` pour les 404** (hiérarchie WP — `HYPOTHÈSE`) — navigateur accède à l'URL inexistante
+3. **Observation visuelle** (conditionnelle) :
+   - [ ] 🔍 Page s'affiche sans erreur 500 (rendu thème en place, pas d'exception PHP)
+   - [ ] 🔍 Message affiché : `<p>Aucun contenu.</p>` (identique au fallback du Test #3 — même message pour vide et 404)
+   - ⚠️ **LIMITATION DOCUMENTÉE** : pas de message distinct « Page introuvable », pas de lien vers l'accueil — c'est une limitation du thème (`index.php` — `PROUVÉ_CODE`)
 
-4. **Remarque** : code 404 réel, traitement Yoast SEO, comportement plugins — tout cela est **hors dépôt**, non vérifiable depuis ce thème seul.
+4. **DevTools** → **Network** → premier élément (la page elle-même) (optionnel) :
+   - [ ] 🔍 Observation optionnelle : code HTTP réponse (200, 404, etc.)
+   - [ ] ℹ️ Le thème ne contrôle pas ce code — c'est WordPress qui l'envoie (hors dépôt)
 
-### Critères de passage
+5. **Hors périmètre observé depuis ce thème** :
+   - [ ] ℹ️ Le code HTTP 404 réel est généré par WordPress, non par le thème
+   - [ ] ℹ️ Traitement Yoast SEO, redirection, comportement plugins — tout est hors dépôt
 
-✅ **Succès** : page rendue sans erreur, fallback `<p>Aucun contenu.</p>` visible, aucune erreur thème.
+### Statut de validation
 
-⚠️ **Limitation acceptée** : pas de `404.php` — le thème applique `index.php` à tous les types de contenu. Amélioration recommandée pour la production.
+✅ **Code du thème validé** : pas de `404.php` — limitation connue documentée (`PROUVÉ_CODE`).
+
+⚠️ **Observation frontend** : le rendu du 404 dépend de la hiérarchie WordPress qui sélectionne `index.php` pour les URLs inexistantes (hors dépôt — `HYPOTHÈSE`). Cette observation est utile pour comprendre le comportement global, mais ne valide rien du thème lui-même.
+
+💡 **Amélioration recommandée** : pour un site en production, créer `404.php` avec message distinct et lien vers l'accueil.
 
 ---
 
@@ -353,9 +374,11 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
 
 ---
 
-## Test #11 : Performance (DevTools Lighthouse — optionnel)
+## Test #11 : Performance (DevTools Lighthouse — optionnel, périphérique)
 
-**Objectif** : baseline de performance — utile pour détecter les régressions après modifications.
+**Objectif** : baseline de performance — utile pour détecter les régressions après modifications du thème.
+
+**⚠️ NOTE** : ce test est périphérique par rapport aux parcours directs du thème (rendu gabarit, assets, boucle). Utile comme diagnostic mais pas un critère de validation du thème lui-même.
 
 ### Étapes
 

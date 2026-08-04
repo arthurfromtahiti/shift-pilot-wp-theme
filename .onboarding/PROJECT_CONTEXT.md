@@ -6,7 +6,7 @@ Ce dépôt contient un **thème WordPress minimal** conçu comme pilote de test 
 
 **Nature du projet** : pilote technique de présentation, volontairement borné au rendu de contenu WordPress standard.
 
-**Périmètre versionné** : seul le thème (6 fichiers versionné : `style.css`, `functions.php`, `index.php`, `header.php`, `footer.php`, `README.md` ; ~70 lignes). Le cœur WordPress, la base de données et tous les plugins sont gérés hors dépôt (FTP) et ne sont donc **pas observables** ici — toute affirmation les concernant est une `HYPOTHÈSE` ou reste `INCONNU`.
+**Périmètre versionné** : seul le thème (6 fichiers versionnés : `style.css`, `functions.php`, `index.php`, `header.php`, `footer.php`, `README.md` ; ~70 lignes effectives). Le cœur WordPress, la base de données et tous les plugins sont gérés hors dépôt (FTP) et ne sont donc **pas observables** ici — toute affirmation les concernant est une `HYPOTHÈSE` ou reste `INCONNU`.
 
 ---
 
@@ -41,9 +41,9 @@ Le thème porte trois responsabilités techniques distinctes, sans hiérarchie m
 - **Recommandation** : créer `404.php` minimal avec message distinct et lien d'accueil
 
 ### 4. Configuration externalisée et non-externalisée
-- **Externalisée** : titre du site lu depuis WordPress via `<?php bloginfo('name'); ?>` dans `header.php:8` — modifiable en admin WP (`VÉRIFIÉ_CODE`)
-- **Non-externalisée** : copyright `&copy; Prox-i` codé en dur dans `footer.php:1` — modification exige une PR (`VÉRIFIÉ_CODE`)
-- **Impact** : toute modification du copyright passe par le dépôt au lieu de l'admin WP
+- **Lue depuis WordPress** : titre du site via `<?php bloginfo('name'); ?>` dans `header.php:8` — modifiable en admin WP (`VÉRIFIÉ_CODE` pour l'appel ; valeur lue = `HYPOTHÈSE_EFFET`)
+- **Codée en dur** : copyright `&copy; Prox-i` hardcodé dans `footer.php:1` — modification exige une PR (`VÉRIFIÉ_CODE`)
+- **Impact** : les modifications du titre du site passent par l'admin WordPress ; le copyright nécessite toujours une modification du dépôt
 - **Contexte** : acceptable pour un pilote, limitation pour production multi-client
 
 ### 5. Absence de tests automatisés
@@ -90,8 +90,8 @@ Ces éléments **existent** sur le site réel mais ne sont **pas versionné** da
 - **Dépendances opérationnelles** :
   - CDN externe `code.jquery.com` (pas de fallback local)
   - WordPress ≥ 5.9 (requis par `style.css:8` — `Requires at least: 5.9`)
-  - PHP ≥ 7.4 (requis par `style.css:9` — `Requires PHP: 7.4`)
-- **Configuration partiellement externalisée** : titre du site (`header.php:8` — `<?php bloginfo('name'); ?>`) lu depuis WordPress et modifiable en admin ; copyright codé en dur (`footer.php:1`) nécessite une PR pour modification
+  - PHP ≥ 7.4 (requis par `style.css:9` — `Requires PHP: 7.4`) ; note : dépendances réelles du déploiement sont inconnues (`INCONNU`)
+- **Configuration** : titre du site (`header.php:8` — `<?php bloginfo('name'); ?>`) lue depuis WordPress et modifiable en admin — `PROUVÉ_CODE` pour l'appel, valeur = `HYPOTHÈSE_EFFET` ; copyright (`footer.php:1`) codé en dur — modification nécessite une PR (`PROUVÉ_CODE`)
 
 ---
 

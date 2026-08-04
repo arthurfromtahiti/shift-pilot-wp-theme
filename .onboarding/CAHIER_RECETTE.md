@@ -26,7 +26,7 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
 
 ## Test #1 : Chargement de la page d'accueil
 
-**Objectif** : vérifier que le thème produit un document HTML valide et que les assets CSS/jQuery se chargent.
+**Objectif** : vérifier que le thème produit un squelette HTML correct et que les assets CSS/jQuery se chargent.
 
 ### Étapes
 
@@ -79,7 +79,7 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
    - [ ] Page s'affiche sans erreur
    - [ ] 🔍 **Observation** : Titre de l'article visible en `<h2>` (rendu via `the_title()` — `index.php:5` — `PROUVÉ_CODE`) ; contenu du titre généré par WordPress
    - [ ] ✅ Contenu de l'article visible (via `the_content()` — `index.php:6` — `PROUVÉ_CODE` ; filtrage et shortcodes exécutés par WordPress — `HYPOTHÈSE_EFFET`)
-   - [ ] ✅ Aucun caractère non échappé ni balise HTML cassée — `the_content()` applique les filtres WordPress d'échappement (`PROUVÉ_CODE` pour l'appel API, filtrage = `HYPOTHÈSE_EFFET`)
+   - [ ] 🔍 **Observation** : Caractères correctement échappés, aucune balise HTML cassée — le thème appelle l'API `the_content()` (`PROUVÉ_CODE`) ; les filtres d'échappement et de sécurité sont appliqués par WordPress (`HYPOTHÈSE_EFFET`)
    - [ ] ✅ Chrome (en-tête/pied) identique à la page d'accueil — structure de gabarit unique (`PROUVÉ_CODE`)
 
 3. **DevTools** → **Inspector** → éléments du contenu :
@@ -224,13 +224,12 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
    - [ ] Balise `<script src="https://code.jquery.com/jquery-1.12.4.min.js?ver=1.12.4"></script>` présente
    - [ ] Avant la fermeture `</body>`
 
-4. **Console JavaScript** (F12 → Console tab) :
-   - [ ] Taper `jQuery` ou `$` et appuyer sur Entrée
-   - [ ] Résultat : une fonction jQuery doit s'afficher (ex. `ƒ (selector, context)`) — jQuery est chargé et accessible
-   - [ ] ❌ Si `ReferenceError: jQuery is not defined` → problème de chargement
+4. **Console JavaScript** (F12 → Console tab) — **VÉRIFICATION OPTIONNELLE** :
+   - ℹ️ Vérification supplémentaire : taper `jQuery` ou `$` et appuyer sur Entrée
+   - ℹ️ Résultat attendu : une fonction jQuery doit s'afficher (ex. `ƒ (selector, context)`) — indique que le site déployé a chargé jQuery correctement
+   - ⚠️ Ce test valide l'environnement WordPress réel, pas directement le thème (le thème enqueue et injecte jQuery en footer — `PROUVÉ_CODE`). Aucune erreur en console = environnement WordPress correctement configuré.
 
-5. **Comportement des plugins** (observation optionnelle — hors périmètre thème) :
-   - ℹ️ Aucune erreur `jQuery is not defined` ou `$ is not defined` en console = le thème charge jQuery correctement
+5. **Comportement des plugins** (observation du site déployé — hors périmètre thème) :
    - ℹ️ Tous les comportements plugins jQuery-dépendants (formulaires, paniers, etc.) restent de la responsabilité des plugins, pas du thème
 
 ### Critères de passage
@@ -374,32 +373,38 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
 
 ---
 
-## Test #11 : Performance (DevTools Lighthouse — optionnel, périphérique)
+## Test #11 : Performance (DevTools Lighthouse — OPTIONNEL ET PÉRIPHÉRIQUE)
 
-**Objectif** : baseline de performance — utile pour détecter les régressions après modifications du thème.
+**Objectif** : baseline de performance du site déployé — diagnostic utile pour détecter les régressions après modifications du thème.
 
-**⚠️ NOTE** : ce test est périphérique par rapport aux parcours directs du thème (rendu gabarit, assets, boucle). Utile comme diagnostic mais pas un critère de validation du thème lui-même.
+**⚠️ IMPORTANCE RÉDUITE** : ce test est **OPTIONNEL** et **PÉRIPHÉRIQUE** par rapport aux parcours de validation du thème lui-même (rendu gabarit, assets, boucle). Il valide le site déployé et son environnement WordPress global, pas directement le thème. À exécuter comme vérification complémentaire ou optionnelle, pas comme critère de passage obligatoire.
 
-### Étapes
+### Prérequis optionnel
+
+- Chrome ou Chromium avec DevTools (Firefox aussi possible)
+
+### Étapes (à effectuer après validation des tests critiques)
 
 1. **DevTools** → onglet **Lighthouse** (ou **PageSpeed Insights**) :
-   - [ ] Lancer une audit de performance
+   - [ ] Lancer un audit de performance
    - [ ] Documenter le score initial (ex. 78/100)
 
-2. **Points d'attention** :
-   - [ ] jQuery CDN chargé en footer ne bloque pas le rendu (bon)
+2. **Points d'observation** :
+   - [ ] jQuery CDN chargé en footer ne bloque pas le rendu (bon — le thème fait sa part : `functions.php:17-23`, `footer.php:2` — `PROUVÉ_CODE`)
    - [ ] CSS minimaliste — peu d'impact sur le score
 
-3. **Après modification du thème** :
+3. **Après modification du thème** (surveillance de régression) :
    - [ ] Relancer Lighthouse
-   - [ ] Comparer au score de baseline
-   - [ ] Alerte si score baisse de > 10 points
+   - [ ] Comparer au score de baseline documenté
+   - [ ] ⚠️ Alerte si score baisse de > 10 points (signe d'une modification du thème qui pénalise la perf — implique une correction)
 
-### Critères de passage
+### Statut de validation
 
-✅ **Succès** : score stable ou amélioré après modification.
+⚠️ **OPTIONNEL** : ce test n'est pas obligatoire avant validation du thème. Le thème lui-même (rendu, assets, hooks) n'est pas affecté par Lighthouse.
 
-⚠️ **À surveiller** : dégradation de performance liée au thème (pas à la base/plugins).
+✅ **Utile pour surveillance** : comme baseline de régression après modifications futures.
+
+⚠️ **Hors périmètre direct** : les scores Lighthouse dépendent aussi de WordPress, de la base, des plugins, et du contenu — pas uniquement du thème.
 
 ---
 

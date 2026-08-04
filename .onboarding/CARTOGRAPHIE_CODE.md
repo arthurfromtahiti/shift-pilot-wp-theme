@@ -86,9 +86,9 @@ Aucun fichier PHP supplémentaire, aucune classe, aucun namespace. Toute la logi
 
 ---
 
-### 2. `index.php` — PRINCIPAL (gabarit unique, fallback selon hiérarchie WordPress)
+### 2. `index.php` — PRINCIPAL (gabarit unique, sélection selon hiérarchie WordPress — `HYPOTHÈSE`)
 
-**Rôle** : seul template présent dans le dépôt. Peut être sélectionné pour différents types de contenu selon la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`). Sert de fallback si templates spécialisés (`single.php`, `archive.php`, etc.) absents du dépôt.
+**Rôle** : seul template présent dans le dépôt (`PROUVÉ_CODE`). Peut être sélectionné pour différents types de contenu selon la hiérarchie WordPress ou servir de fallback si templates spécialisés (`single.php`, `archive.php`, etc.) absents du dépôt (comportement = `HYPOTHÈSE`, hors dépôt). Autres templates pourraient exister côté FTP hors dépôt et être utilisés par WordPress.
 
 **Lignes critiques** :
 
@@ -100,7 +100,7 @@ Aucun fichier PHP supplémentaire, aucune classe, aucun namespace. Toute la logi
 | **4** | `<?php post_class(); ?>` | Moyenne | Classes CSS contextuelles — générées par WordPress selon type/statut |
 | **5** | `<?php the_title(); ?>` | Haute | Titre du post — sortie filtrée par WordPress |
 | **6** | `<?php the_content(); ?>` | Haute | Contenu du post — sortie filtrée + shortcodes exécutés par WordPress |
-| **9** | `<p>Aucun contenu.</p>` | Moyenne | Fallback si `have_posts()` = false — même message pour toutes les listes vides (`PROUVÉ_CODE`) ; distinction 404/vide dépend de sélection `index.php` par WordPress selon sa hiérarchie pour ces cas (hors dépôt — `HYPOTHÈSE`) |
+| **9** | `<p>Aucun contenu.</p>` | Moyenne | Fallback si `have_posts()` = false — même message pour toutes les listes vides (`PROUVÉ_CODE`) ; l'apparition de ce message pour les URLs inexistantes (404) dépend de la sélection de `index.php` par WordPress selon sa hiérarchie templates — ce comportement est une `HYPOTHÈSE` (hors dépôt) |
 | **12** | `<?php get_footer(); ?>` | Haute | Inclut `footer.php` — si absent, page sans pied ni `</html>` |
 
 **Points de vigilance** :
@@ -309,7 +309,7 @@ index.php exécuté
 - Non scalable pour un thème multi-client
 
 **Contexte** :
-- Pour un pilote, acceptable ; pour production multi-client, externaliser via les options WordPress serait une amélioration recommandée
+- Acceptable pour un pilote ; limitation actuellement observable (`PROUVÉ_CODE` — copyright en dur)
 
 ---
 

@@ -21,10 +21,10 @@ Produire le document HTML lorsque `index.php` est invoqué par WordPress. Le th�
 - **`footer.php`** — produit le pied de page et ferme le document HTML
 
 ## Points d'entrée
-- Invocation de `index.php` par WordPress. Ce template est le seul présent dans le dépôt — pas de `single.php`, `page.php`, `archive.php`, `404.php` (`VÉRIFIÉ_CODE`). Que WordPress l'utilise en fallback universel est un comportement de la hiérarchie WP (`HYPOTHÈSE` — hors dépôt).
+- Invocation de `index.php` par WordPress. Ce template est le seul présent dans le dépôt — pas de `single.php`, `page.php`, `archive.php`, `404.php` (`VÉRIFIÉ_CODE`). Son utilisation par WordPress dépend de la hiérarchie de templates WP (`HYPOTHÈSE` — hors dépôt) ; suggéré par l'absence de templates spécialisés dans le dépôt.
 
 ## Étapes principales
-1. **Sélection du template** — WordPress parcourt sa hiérarchie de templates et, n'en trouvant aucun de spécialisé dans le thème, sélectionne `index.php` (le seul présent). *(Comportement WordPress natif, `HYPOTHÈSE` — suggéré par l'absence de tout autre template dans le dépôt.)*
+1. **Sélection du template** — WordPress parcourt sa hiérarchie de templates. N'en trouvant aucun de spécialisé dans le dépôt, il peut sélectionner `index.php` (le seul présent dans le dépôt). *(Comportement dépendant de la hiérarchie WP, `HYPOTHÈSE` — suggéré par l'absence de templates spécialisés dans le dépôt.)*
 2. **Appel `get_header()`** (`index.php:1`) — WordPress inclut `header.php` :
    - Doctype HTML5, balise `<html>` avec `language_attributes()` (`header.php:1-2`)
    - `<head>` avec charset (`bloginfo('charset')`, `header.php:4`) et `wp_head()` (`header.php:5`) — point d'injection des assets (CSS, titre, meta, scripts en head)

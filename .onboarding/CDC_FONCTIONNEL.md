@@ -86,16 +86,16 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
 **Règle** : Deux ressources sont enregistrées et mises en file d'attente via les hooks WordPress natifs :
 
 - **Feuille de style du thème** :
-  - Enregistrement : `wp_enqueue_style('shift-pilot-style', get_stylesheet_uri(), [], '1.0.2')` (`functions.php:13`)
-  - Injection : via `wp_head()` en `header.php:5` → balise `<link rel="stylesheet" href="...?ver=1.0.2">`
+  - Enregistrement : `wp_enqueue_style('shift-pilot-style', get_stylesheet_uri(), [], '1.0.2')` (`functions.php:13`) — `PROUVÉ_CODE`
+  - Injection : `wp_head()` appelé en `header.php:5` (`PROUVÉ_CODE`) ; WordPress émet la balise `<link rel="stylesheet" href="...?ver=1.0.2">` en réaction (`HYPOTHÈSE_EFFET`)
   - Cache-buster : version `'1.0.2'` (correspondant à `style.css:6`) — doit être mise à jour manuellement à chaque modification du fichier CSS
   - **Limitation** : versioning manuel non automatisé, risque d'oubli de mise à jour lors d'un changement CSS
 
 - **jQuery depuis CDN externe** :
-  - Désinscription : `wp_deregister_script('jquery')` (`functions.php:16`) — supprime le jQuery bundlé WordPress
-  - Enregistrement : `wp_enqueue_script('jquery', 'https://code.jquery.com/jquery-1.12.4.min.js', [], '1.12.4', true)` (`functions.php:17-23`)
+  - Désinscription : `wp_deregister_script('jquery')` (`functions.php:16`) — supprime le jQuery bundlé WordPress (`PROUVÉ_CODE`)
+  - Enregistrement : `wp_enqueue_script('jquery', 'https://code.jquery.com/jquery-1.12.4.min.js', [], '1.12.4', true)` (`functions.php:17-23`) — `PROUVÉ_CODE`
   - Version épinglée : `1.12.4` (non automatisée, montée de version manuelle uniquement)
-  - Injection : via `wp_footer()` en `footer.php:2` → balise `<script src="https://code.jquery.com/...?ver=1.12.4"></script>` en fin de `</body>`
+  - Injection : `wp_footer()` appelé en `footer.php:2` (`PROUVÉ_CODE`) ; WordPress émet la balise `<script src="https://code.jquery.com/...?ver=1.12.4"></script>` en fin de `</body>` en réaction (`HYPOTHÈSE_EFFET`)
   - **Choix architectural documenté** : commit `5d9b462` mentionne « jQuery CDN épinglé 1.12.4 » — choix délibéré, à confirmer avant changement
   - **Limitations** :
     - Dépendance sur CDN externe sans fallback local (si `code.jquery.com` indisponible, jQuery ne charge pas)
@@ -124,7 +124,7 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
   - Déclaration : `functions.php:9` (`PROUVÉ_CODE`)
   - Effet attendu : WordPress active le champ « Image mise en avant » dans l'admin pour les éditeurs (`HYPOTHÈSE_EFFET` — comportement WP non sourcé ici)
   - Consommation dans le thème : **aucune** — aucun template n'appelle `the_post_thumbnail()` (`VÉRIFIÉ_CODE` — vérifiable par absence dans `index.php`)
-  - **Incohérence documentée** : capacité déclarée mais jamais affichée dans le rendu frontend. Les images chargées par les éditeurs n'apparaîtront pas sur le site.
+  - **Incohérence documentée** : capacité déclarée mais jamais affichée dans le rendu frontend. La featured image mise en avant par un éditeur n'apparaîtra pas sur le site (le thème ne la consomme pas via `the_post_thumbnail()`). Note : les images insérées directement dans le contenu WordPress via `the_content()` apparaissent indépendamment.
   - **Correction à envisager** : soit retirer la déclaration (si pas d'usage prévu), soit ajouter un appel à `the_post_thumbnail()` dans `index.php` (si consommation souhaitée)
 
 - **Absences notables** :

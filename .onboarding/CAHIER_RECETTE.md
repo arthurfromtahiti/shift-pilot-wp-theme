@@ -97,31 +97,31 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
 
 ---
 
-## Test #3 : Boucle vide (sans contenu)
+## Test #3 : Boucle vide (sans contenu) — OBSERVATION CONDITIONNELLE
 
-**Objectif** : vérifier que le fallback `<p>Aucun contenu.</p>` s'affiche quand la boucle WordPress ne retourne aucun article/page (cas prouvé par `index.php:9`).
+**Objectif** : vérifier que le fallback `<p>Aucun contenu.</p>` s'affiche quand la boucle WordPress ne retourne aucun article/page.
+
+**Prérequis** : cette observation ne s'applique que si WordPress route une URL valide mais sans contenu vers `index.php` (comportement dépendant de la configuration WordPress hors dépôt — `HYPOTHÈSE`).
 
 ### Prérequis
 
 - URL valide mais sans contenu : ex. `/category/vide/` si catégorie vide, ou toute archive sans articles
-- ℹ️ Cette URL **existe et est gérée par WordPress**, contrairement aux URLs inexistantes (Test #4)
+- ℹ️ Impossible de tester sans configuration WordPress réelle et archive vide disponible
 
 ### Étapes
 
-1. **Navigateur** : accéder à une URL d'archive valide mais vide (ex. catégorie vide, archive par auteur sans articles)
-2. **Inspection visuelle** :
-   - [ ] Message `<p>Aucun contenu.</p>` s'affiche
+1. **Si une archive vide peut être créée** : accéder à une URL d'archive valide mais vide (ex. catégorie vide, archive par auteur sans articles)
+2. **Observation visuelle** :
+   - [ ] Message `<p>Aucun contenu.</p>` observé
    - [ ] Chrome du site toujours visible (pas de page blanche)
-   - [ ] ⚠️ **Note** : ce message s'affiche aussi pour les URLs inexistantes (404) via le fallback WordPress — voir Test #4 pour cette distinction
+   - ⚠️ **Note** : ce message s'affiche aussi pour les URLs inexistantes (404) via le fallback WordPress — voir Test #4 pour cette distinction
 
 3. **DevTools** → **Console** :
    - [ ] Aucune erreur PHP, aucune erreur JavaScript
 
-### Critères de passage
+### Statut de validation
 
-✅ **Succès** : fallback s'affiche, structure HTML intacte.
-
-❌ **Échec** : page blanche, erreur PHP.
+⚠️ **Observation**, pas de critère de passage — le code du thème (`index.php:9`) déclare bien le fallback (`PROUVÉ_CODE`), mais son apparition dépend de WordPress qui retourne une boucle vide (`HYPOTHÈSE`). Test applicable seulement si archive vide disponible et routable via `index.php`.
 
 ---
 
@@ -222,120 +222,134 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
 
 ## Test #7 : Title-tag (balise `<title>`) — OBSERVATION WORDPRESS
 
-**Objectif** : observer que le thème déclare `add_theme_support('title-tag')` et que WordPress injecte la balise `<title>`.
+**Objectif** : vérifier que le thème déclare correctement `add_theme_support('title-tag')` — la présence et génération de la balise `<title>` dépend ensuite du cœur WordPress.
 
-**⚠️ NOTE** : le contenu exact de `<title>` est généré par WordPress (cœur WP), hors dépôt du thème. Ce test valide seulement la présence et la dynamique de la balise, pas son contenu.
+**⚠️ NOTE CRITIQUE** : le thème **déclare** seulement que WordPress doit gérer le `<title>` (`functions.php:8` — `PROUVÉ_CODE`). La balise est **injectée par WordPress**, pas par le thème (`header.php` ne contient aucun `<title>` manuel — `PROUVÉ_CODE`). Le contenu exact du `<title>` est généré par le cœur WordPress (hors dépôt — `HYPOTHÈSE_EFFET`).
 
 ### Étapes
 
-1. **DevTools** → **Elements** → inspecter `<head>` :
-   - [ ] Balise `<title>` présente (non absente)
-   - [ ] Contenu non vide (ex. `<title>Accueil — Mon Site WordPress</title>` — le contenu exact dépend de WordPress)
+1. **Vérification locale du code** :
+   - [ ] Lire `functions.php:8` : déclare bien `add_theme_support('title-tag')` (`PROUVÉ_CODE`)
+   - [ ] Lire `header.php:1-9` : aucun `<title>` manuel présent (`PROUVÉ_CODE`)
+   - **Conclusion locale** : le thème délègue correctement la gestion du `<title>` à WordPress.
 
-2. **Navigateur** → onglet du site :
-   - [ ] Onglet affiche un titre (observation que WordPress a injecté la balise)
+2. **Observation frontend** (ne pas valider comme succès du thème — observation de l'environnement WordPress) :
+   - [ ] DevTools → **Elements** → inspecter `<head>` : si une balise `<title>` est présente (non absente), cela signifie que WordPress a injecté la balise (observation)
+   - [ ] Contenu non vide : observation que WordPress a généré un titre (contenu = responsabilité WordPress)
+   - [ ] Navigateur → onglet du site affiche un titre : observation supplémentaire que le navigateur a reçu la balise
 
-3. **Changer de page** (aller à un article) :
-   - [ ] Onglet change : affiche un titre différent (observation que WordPress met à jour dynamiquement)
-   - [ ] `<title>` dans DevTools est modifié
+3. **Changer de page** (si possible) :
+   - [ ] Observation optionnelle : onglet change (si WordPress met à jour le titre dynamiquement)
+   - ℹ️ Ce comportement dépend de WordPress et peut varier selon la configuration du site
 
-4. **Observation du contenu** (généré par WordPress, hors dépôt — ne pas valider) :
-   - ℹ️ Accueil : titre de l'accueil ou nom du site (généré par WordPress)
-   - ℹ️ Article : titre de l'article (généré par WordPress)
-   - ℹ️ Page vide/404 : title dépend de WordPress et des plugins — non vérifiable depuis ce thème seul
+### Statut de validation
 
-### Critères de passage
+✅ **Code du thème valide** : déclaration présente, pas de `<title>` manuel — le thème fait sa part.
 
-✅ **Succès** : balise `<title>` présente et dynamique (change de page en page).
+⚠️ **Observation frontend** : présence/contenu du `<title>` = responsabilité du cœur WordPress, non du thème. Ne compte pas comme critère de passage pour le thème.
 
-⚠️ **Observation** : contenu exact de `<title>` = responsabilité du cœur WordPress, vérifiable via l'admin WordPress (Paramètres → Titre du site) ou via les plugins SEO.
+ℹ️ **Contenu exact** : vérifié via l'admin WordPress (Paramètres → Titre du site, ou plugins SEO) — hors périmètre versionné de ce thème.
 
 ---
 
-## Test #8 : Images mises en avant (BONUS — limitation actuelle)
+## Test #8 : Images mises en avant — LIMITATION DOCUMENTÉE
 
-**Objectif** : vérifier le statut de `add_theme_support('post-thumbnails')` (déclaré, mais non utilisé par le thème).
+**Objectif** : documenter l'incohérence entre la capacité déclarée et son absence de consommation dans le thème.
 
-### Prérequis
+**⚠️ LIMITATION CONNUE** : le thème déclare `add_theme_support('post-thumbnails')` mais ne l'utilise jamais dans le rendu (`PROUVÉ_CODE`). Les images mises en avant chargées via l'admin WordPress ne s'afficheront pas sur le site.
 
-- Au moins un article avec une image mise en avant
+### Prérequis (optionnel)
+
+- Au moins un article avec une image mise en avant (pour observer l'incohérence)
 
 ### Étapes
 
-1. **Admin WordPress** → Modifier un article :
-   - [ ] Champ « Image mise en avant » visible (activé par `add_theme_support('post-thumbnails')`)
-   - [ ] Image associée existante
+1. **Vérification locale du code** :
+   - [ ] Lire `functions.php:9` : déclare bien `add_theme_support('post-thumbnails')` (`PROUVÉ_CODE`)
+   - [ ] Lire `index.php` : aucun appel à `the_post_thumbnail()` présent (`PROUVÉ_CODE` — vérifiable par recherche)
+   - **Conclusion locale** : l'incohérence est confirmée dans le code.
 
-2. **Frontend** → article avec image mise en avant :
-   - [ ] Chercher l'image dans le rendu HTML : aucun appel à `the_post_thumbnail()` n'existe dans `index.php` (`VÉRIFIÉ_CODE`)
-   - [ ] ✅ Image **ne s'affiche pas** — c'est attendu (limitation documentée)
+2. **Observation frontend** (optionnelle, si article avec image existe) :
+   - [ ] Admin WordPress → article avec image mise en avant : le champ « Image mise en avant » est visible (effet de la déclaration)
+   - [ ] Frontend → article : chercher une balise `<img>` pour la vignette — aucune ne s'affiche (effet de l'absence d'appel à `the_post_thumbnail()`)
+   - ℹ️ Les images chargées par les éditeurs ne sont jamais affichées aux visiteurs
 
-3. **DevTools** → inspecter le contenu de l'article :
-   - [ ] Aucun tag `<img>` pour la vignette (on la cherche, on ne la trouve pas)
+3. **Observation de conflit d'attentes** :
+   - ℹ️ Éditeurs voient le champ et ajoutent des images → attente d'affichage
+   - ℹ️ Les images ne s'affichent jamais → déception UX
 
-### Critères de passage
+### Statut de validation
 
-✅ **Comportement actuel (documenté)** : image mises en avant déclarée mais non affichée.
+⚠️ **Incohérence documentée** : c'est une limitation intentionnelle ou un oubli (à clarifier avec le product owner).
 
-⚠️ **Améliorations futures** : soit consommer `the_post_thumbnail()` dans `index.php`, soit retirer la déclaration de `add_theme_support('post-thumbnails')`.
+✅ **Résolution attendue** :
+   - **Option 1** : retirer `add_theme_support('post-thumbnails')` de `functions.php:9` (si images jamais affichées)
+   - **Option 2** : ajouter un appel à `the_post_thumbnail()` dans `index.php` (si consommation souhaitée)
+
+ℹ️ Voir questions pour le product owner (CDC_FONCTIONNEL.md) pour clarifier l'intention.
 
 ---
 
-## Test #9 : Langue & charset (International)
+## Test #9 : Langue & charset (International) — OBSERVATION WORDPRESS
 
-**Objectif** : vérifier que la langue et le charset sont correctement déclarés.
+**Objectif** : vérifier que le thème appelle correctement les API WordPress pour langue et charset.
+
+**⚠️ NOTE CRITIQUE** : le thème **appelle** seulement `language_attributes()` et `bloginfo('charset')` (API WordPress). Les **valeurs réelles** sont générées par WordPress selon la configuration du site (hors dépôt — `HYPOTHÈSE_EFFET`). Le thème ne contrôle pas la langue ni le charset.
 
 ### Étapes
 
-1. **DevTools** → **Elements** → inspecter `<html>` :
-   - [ ] Attribut `lang` présent : ex. `<html lang="fr-FR">` (varie selon la configuration WordPress)
-   - [ ] Valeur cohérente avec la langue du site (vérifiable en admin WordPress → Paramètres → Langue)
+1. **Vérification locale du code** :
+   - [ ] Lire `header.php:1-2` : appels `<?php language_attributes(); ?>` et `<?php bloginfo('charset'); ?>` présents (`PROUVÉ_CODE`)
+   - **Conclusion locale** : le thème délègue correctement la gestion de la langue et du charset à WordPress.
 
-2. **DevTools** → **Elements** → inspecter `<head>` :
-   - [ ] Balise `<meta charset="utf-8">` présente (ou équivalent)
+2. **Observation frontend** (ne pas valider comme succès du thème — observation de l'environnement WordPress) :
+   - [ ] DevTools → **Elements** → inspecter `<html>` : si attribut `lang` est présent (ex. `lang="fr-FR"`), c'est WordPress qui l'a injecté (observation)
+   - [ ] Valeur observée : ex. `fr-FR` — vérifie que WordPress a lu la configuration (hors dépôt)
+   - [ ] DevTools → **Elements** → inspecter `<head>` : si balise `<meta charset="utf-8">` est présente, c'est WordPress qui l'a injectée (observation)
 
-3. **Pages avec contenu multilingue** (si applicable) :
-   - [ ] Accents (é, è, ê, ü, ñ, etc.) s'affichent correctement
-   - [ ] Caractères spéciaux («, », —, …) non garbled
+3. **Contenu réel** (si contenu multilingue existe dans WordPress) :
+   - [ ] Observation optionnelle : accents (é, è, ê, ü, ñ, etc.) lisibles — indique que le charset a pris effet (dépend de WordPress et de la configuration du navigateur)
+   - [ ] Caractères spéciaux («, », —, …) : observation que l'encodage UTF-8 fonctionne (hors dépôt)
 
-### Critères de passage
+### Statut de validation
 
-✅ **Succès** : charset UTF-8, langue déclarée, caractères spéciaux lisibles.
+✅ **Code du thème valide** : appels aux API WordPress présents — le thème fait sa part.
 
-❌ **Échec** : charset absent, caractères garbled, langue manquante.
+⚠️ **Observation frontend** : présence/valeur de `lang` et `charset` = responsabilité du cœur WordPress, non du thème. Ne compte pas comme critère de passage pour le thème.
+
+ℹ️ **Configuration de langue** : vérifiée via l'admin WordPress (Paramètres → Langue du site) — hors périmètre versionné de ce thème.
 
 ---
 
-## Test #10 : Classe CSS contextuelles — OBSERVATION WORDPRESS
+## Test #10 : Classes CSS contextuelles — OBSERVATION WORDPRESS
 
-**Objectif** : observer que le thème appelle `post_class()` et `body_class()` qui génèrent des classes contextuelles.
+**Objectif** : vérifier que le thème appelle correctement `post_class()` et `body_class()`.
 
-**⚠️ NOTE** : le contenu exact des classes est généré par WordPress selon la configuration du site (type de post, statut, etc.), hors dépôt du thème. Ce test valide seulement que les appels fonctionnent, pas le contenu exact.
+**⚠️ NOTE CRITIQUE** : le thème **appelle** seulement les API WordPress. Le **contenu exact des classes** est généré par WordPress selon le contexte (type de post, statut du site, page affichée, etc. — hors dépôt — `HYPOTHÈSE_EFFET`). Le thème ne contrôle pas les classes.
 
 ### Étapes
 
-1. **Page d'accueil** → DevTools → inspecter `<body>` :
-   - [ ] Attribut `class` présent (non absent)
-   - ℹ️ Classes possibles (ex. `home blog logged-in ...` — générées par WordPress selon configuration)
-   - ℹ️ Classe `home` ou équivalent probable (spécifique à l'accueil, selon WordPress)
+1. **Vérification locale du code** :
+   - [ ] Lire `header.php:7` : appel `<?php body_class(); ?>` présent (`PROUVÉ_CODE`)
+   - [ ] Lire `index.php:4` : appel `<?php post_class(); ?>` présent (`PROUVÉ_CODE`)
+   - **Conclusion locale** : le thème appelle correctement les API WordPress pour les classes.
 
-2. **Article** → DevTools → inspecter `<body>` :
-   - [ ] Attribut `class` présent et différent de l'accueil (observation que WordPress adapte les classes au contexte)
-   - ℹ️ Classes probables (ex. `single`, `single-post`) — dépendantes du type de post
-   - ℹ️ Classe statut (ex. `status-publish`) — dépendante du post
+2. **Observation frontend** (ne pas valider comme succès du thème — observation de l'environnement WordPress) :
+   - [ ] DevTools → inspecter `<body>` : si attribut `class` est présent (ex. `class="home blog logged-in ..."`), c'est WordPress qui l'a généré (observation)
+   - [ ] Attribut `class` observé sur `<body>` (dépend de la page affichée et de la configuration WordPress)
+   - [ ] DevTools → inspecter `<article>` (sur une page article) : si attribut `class` présent (ex. `class="post-123 type-post status-publish"`), c'est WordPress qui l'a généré (observation)
 
-3. **Article** → DevTools → inspecter `<article>` :
-   - [ ] Attribut `class` présent (non absent)
-   - ℹ️ Classes générées par `post_class()` (ex. `post-123 type-post status-publish` — le numéro et les classes varient selon le post réel)
+3. **Observation d'adaptation au contexte** (optionnelle) :
+   - [ ] Si possible, naviguer entre l'accueil et un article et observer que les classes `<body>` changent (ex. accueil : `home`, article : `single-post`)
+   - ℹ️ Ces changements reflètent que WordPress s'adapte au type de page (comportement dépendant de WordPress, hors dépôt)
 
-4. **CSS** (si utilisé pour styliser des types de posts différemment) :
-   - ℹ️ Les classes permettraient une stylisation contextualisée (ex. `body.single .site-header` vs `body.home .site-header`), dépendante de WordPress
+### Statut de validation
 
-### Critères de passage
+✅ **Code du thème valide** : appels aux API WordPress présents — le thème fait sa part.
 
-✅ **Succès** : attributs `class` présents sur `<body>` et `<article>`, non vides.
+⚠️ **Observation frontend** : présence/contenu des classes = responsabilité du cœur WordPress, non du thème. Ne compte pas comme critère de passage pour le thème.
 
-⚠️ **Observation** : contenu exact des classes = responsabilité du cœur WordPress, dépendant du type de post, du statut, de la configuration du site.
+ℹ️ **Contenu exact** : déterminé par WordPress selon le contexte (type de post, statut, page) — non configurable par le thème.
 
 ---
 

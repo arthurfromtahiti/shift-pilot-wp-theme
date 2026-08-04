@@ -86,9 +86,9 @@ Aucun fichier PHP supplémentaire, aucune classe, aucun namespace. Toute la logi
 
 ---
 
-### 2. `index.php` — PRINCIPAL (gabarit unique)
+### 2. `index.php` — PRINCIPAL (gabarit unique, fallback universel)
 
-**Rôle** : seul template présent dans le dépôt. Point de rendu déterminé par la hiérarchie WordPress (hors dépôt, `HYPOTHÈSE`).
+**Rôle** : seul template présent dans le dépôt. Sélectionné pour tous les types de contenu selon la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`). Sert de fallback si templates spécialisés absents.
 
 **Lignes critiques** :
 
@@ -100,12 +100,12 @@ Aucun fichier PHP supplémentaire, aucune classe, aucun namespace. Toute la logi
 | **4** | `<?php post_class(); ?>` | Moyenne | Classes CSS contextuelles — générées par WordPress selon type/statut |
 | **5** | `<?php the_title(); ?>` | Haute | Titre du post — sortie filtrée par WordPress |
 | **6** | `<?php the_content(); ?>` | Haute | Contenu du post — sortie filtrée + shortcodes exécutés par WordPress |
-| **9** | `<p>Aucun contenu.</p>` | Moyenne | Fallback si `have_posts()` = false — même message pour toutes les listes vides (`PROUVÉ_CODE` ; distinction 404/vide dépend de présence d'autres templates — `HYPOTHÈSE`) |
+| **9** | `<p>Aucun contenu.</p>` | Moyenne | Fallback si `have_posts()` = false — même message pour toutes les listes vides (`PROUVÉ_CODE`) ; distinction 404/vide dépend de sélection `index.php` par WordPress pour ces cas (hiérarchie WP hors dépôt — `HYPOTHÈSE`) |
 | **12** | `<?php get_footer(); ?>` | Haute | Inclut `footer.php` — si absent, page sans pied ni `</html>` |
 
 **Points de vigilance** :
 
-- **Gabarit unique dans le dépôt** : l'absence de `single.php`, `page.php`, `archive.php` implique que ce gabarit gère tous les types de contenu présent (`PROUVÉ_CODE`). La sélection réelle dépend de la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`). Autres templates pourraient exister côté FTP hors dépôt.
+- **Gabarit unique dans le dépôt** : l'absence de `single.php`, `page.php`, `archive.php` implique que ce gabarit est le seul candidat du dépôt (`PROUVÉ_CODE`). Que WordPress le sélectionne effectivement pour tous les types de contenu dépend de la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`). Autres templates spécialisés pourraient exister côté FTP hors dépôt.
 - **Aucun appel à `the_post_thumbnail()`** : les images mises en avant (déclarées via `add_theme_support` en `functions.php:9`) ne sont jamais affichées (`PROUVÉ_CODE` — limitation).
 - **Pas de menu, pas de sidebar** : aucun point d'ancrage natif pour les widgets ou menus WP (`PROUVÉ_CODE`).
 
@@ -309,7 +309,8 @@ index.php exécuté
 - Non scalable pour un thème multi-client
 
 **Résolution** :
-- Externaliser la valeur du copyright dans les options WordPress ou en constante, plutôt que la coder en dur
+- Externaliser la valeur du copyright dans les options WordPress, plutôt que de la coder en dur
+- Pour un pilote, acceptable ; pour production multi-client, à adresser
 
 ---
 

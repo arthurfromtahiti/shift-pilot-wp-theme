@@ -6,13 +6,11 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
 
 **Importante distinction** : ce cahier teste **le code du thème versionné** (appels d'API WordPress, structure HTML, enregistrement des assets) et **observe** le comportement généré par WordPress et l'environnement réel (valeurs injectées, contenu filtré, hiérarchie des templates). Les tests marqués ✅ valident le thème ; ceux marqués 🔍 observent des effets WordPress hors du périmètre du thème.
 
-**Durée estimée** : 15–30 min selon le périmètre (vérification simple vs. diagnostic complet).
-
 **Environnement requis** :
-- WordPress ≥ 5.9 (`style.css:8` — `Requires at least: 5.9`)
-- PHP ≥ 7.4 (`style.css:9` — `Requires PHP: 7.4`)
-- Navigateur moderne avec DevTools (Firefox, Chrome, Safari)
-- Accès admin WordPress (pour certains tests optionnels)
+- WordPress ≥ 5.9 (requis par `style.css:8` — `Requires at least: 5.9`)
+- PHP ≥ 7.4 (requis par `style.css:9` — `Requires PHP: 7.4`)
+- Navigateur avec DevTools (pour inspection du rendu)
+- Accès admin WordPress (optionnel, pour certains tests)
 
 ---
 
@@ -66,7 +64,7 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
 
 ## Test #2 : Article individuel
 
-**Objectif** : vérifier que le rendu fonctionne pour un article et que les données sont correctement échappées.
+**Objectif** : vérifier que le rendu fonctionne pour un article via les API WordPress.
 
 ### Prérequis
 
@@ -121,7 +119,7 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
 3. **Observation visuelle** (conditionnelle) :
    - [ ] 🔍 Message `<p>Aucun contenu.</p>` observé (si WordPress sélectionne `index.php` pour cette URL — `HYPOTHÈSE`)
    - [ ] 🔍 Chrome du site visible (en-tête/pied) — la structure du thème reste intacte
-   - ⚠️ **Note** : ce message s'affiche **aussi** pour les URLs inexistantes (404) via le fallback WordPress — voir Test #4 pour cette distinction
+   - ⚠️ **Note** : le même message s'affiche aussi pour d'autres cas où la boucle ne retourne aucun contenu — voir Test #4 pour les URLs inexistantes (404)
 
 4. **DevTools** → **Console** (si test s'applique) :
    - [ ] Aucune erreur PHP, aucune erreur JavaScript

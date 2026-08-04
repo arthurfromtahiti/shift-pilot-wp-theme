@@ -123,13 +123,13 @@ Aucun fichier PHP supplémentaire, aucune classe, aucun namespace. Toute la logi
 | **4** | `<meta charset="...">` via `bloginfo('charset')` | Moyenne | Encoding UTF-8 — mal configuré risque d'affichage garbled |
 | **5** | `<?php wp_head(); ?>` | MAXIMAL | Point d'injection WordPress — tout CSS, meta, `<title>`, script en head passe ici |
 | **7** | `<body>` + `body_class()` | Moyenne | Classes CSS contextuelles (accueil/single/archive/etc.) |
-| **8** | `<h1><?php bloginfo('name'); ?></h1>` | Basse | Titre du site (lu depuis WordPress) — pas de lien vers accueil |
+| **8** | `<h1><?php bloginfo('name'); ?></h1>` | Basse | Titre du site (lu depuis WordPress) — pas de lien vers accueil, pas de logo |
 
 **Points de vigilance** :
 
 - **Pas de `<title>` manuel** : conséquence volontaire de `add_theme_support('title-tag')` — si `wp_head()` n'injecte pas correctement, pas de titre du tout.
 - **Pas de menu** : aucun `wp_nav_menu()` ni de lien de navigation.
-- **Copyright hors du footer** : le titre du site en `<h1>` est typiquement accompagné d'un logo ou lien accueil — absent ici.
+- **Absence de lien/logo** : le titre du site en `<h1>` ne contient aucun lien vers l'accueil — pas de logo non plus.
 
 ---
 
@@ -190,9 +190,11 @@ WordPress déclenche after_setup_theme
   ├─ add_theme_support('title-tag')
   └─ add_theme_support('post-thumbnails')
     ↓
-WordPress détermine le template (hiérarchie)
-  └─ Sélectionne index.php (seul disponible)
+WordPress détermine le template (hiérarchie — hors dépôt, HYPOTHÈSE)
+  ├─ Cherche template selon le type de contenu (hors dépôt — HYPOTHÈSE)
+  └─ index.php peut être sélectionné en fallback (seul template versionné disponible)
     ↓
+Si index.php est sélectionné (HYPOTHÈSE) :
 index.php exécuté
   ├─ get_header() → header.php
   │   ├─ Doctype, <html>, charset, wp_head() [1]
@@ -206,6 +208,8 @@ index.php exécuté
 
 [1] wp_head() : jQuery n'y est pas (chargé en footer)
 [2] wp_footer() : jQuery CDN + tout script en footer (priorité 10+)
+
+⚠️ Sélection réelle dépend de la hiérarchie WordPress (hors dépôt). D'autres templates peuvent exister hors dépôt.
 ```
 
 ---
@@ -239,7 +243,7 @@ index.php exécuté
 |---|---|---|
 | **Composer/PHP packages** | Aucun utilisé | Simplicité (pas de dépendance transitive) |
 | **npm/webpack** | Aucun utilisé | CSS/JS minifiés manuellement ou non minifiés |
-| **Babel/transpiling** | Non utilisé | Pas de syntaxe ES6+ (compatible tous navigateurs) |
+| **Babel/transpiling** | Non utilisé | Aucun outillage de transpilation observé dans ce dépôt (`PROUVÉ_CODE`) — la compatibilité navigateur réelle est `INCONNU` (dépend du contenu du site, des plugins, de la configuration WordPress) |
 
 ---
 

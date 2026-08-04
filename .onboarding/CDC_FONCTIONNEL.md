@@ -6,7 +6,7 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
 
 **Périmètre thème** : rendu générique de contenu WordPress natif via un gabarit unique (`index.php`), sans différenciation par type de contenu. Nature métier réelle du site (blog, vitrine, e-commerce) non déterminable depuis ce dépôt seul.
 
-**Cas hors périmètre** : e-commerce (WooCommerce), formulaires (Contact Form 7), SEO avancé (Yoast) — plugins hors dépôt. Intégration spécialisée par type de contenu — exigerait des templates `single.php`, `archive.php`, `woocommerce.php` absents du dépôt.
+**Cas hors périmètre** : e-commerce (WooCommerce), formulaires (Contact Form 7), SEO avancé (Yoast) — plugins hors dépôt. Intégration spécialisée par type de contenu — l'absence de templates `single.php`, `archive.php`, `woocommerce.php` dans le dépôt rend ces intégrations non visibles ici (`HYPOTHÈSE` — templates pourraient exister hors dépôt).
 
 ---
 
@@ -58,12 +58,12 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
   }
   ```
 - **Contenu rendu** :
-  - `<h2><?php the_title(); ?></h2>` — titre du post (filtré par WordPress)
-  - `<div><?php the_content(); ?></div>` — corps du post (filtré, shortcodes exécutés)
-  - Classes CSS `<?php post_class(); ?>` — générées par WordPress selon type/statut du post
+  - `<h2><?php the_title(); ?></h2>` — titre du post ; appel WordPress présent (`PROUVÉ_CODE`), contenu généré et filtré par WordPress (`HYPOTHÈSE_EFFET`)
+  - `<div><?php the_content(); ?></div>` — corps du post ; appel WordPress présent (`PROUVÉ_CODE`), filtrage et shortcodes appliqués par WordPress (`HYPOTHÈSE_EFFET`)
+  - Classes CSS `<?php post_class(); ?>` — appel WordPress présent (`PROUVÉ_CODE`), contenu généré par WordPress selon type/statut du post (`HYPOTHÈSE_EFFET`)
 - **Limitation** : aucun appel à `the_post_thumbnail()` — images mises en avant ne sont jamais affichées malgré `add_theme_support('post-thumbnails')` (`functions.php:9`)
 
-**Hypothèse** : `the_content()` applique déjà les filtres WordPress (echappement, exécution shortcodes, etc.) — le thème ne rééchappe pas. Comportement cohérent, pas d'XSS détectable dans le thème (`VÉRIFIÉ_CODE`).
+**Point de sécurité** : le thème appelle uniquement les API WordPress natives (`the_title()`, `the_content()`, `post_class()`) — il n'émet aucun `echo` brut de variable utilisateur (`VÉRIFIÉ_CODE`). Le filtrage et l'échappement dépendent de ces API WordPress (comportement = `HYPOTHÈSE_EFFET`, hors dépôt).
 
 ---
 
@@ -219,7 +219,7 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
 
 1. **Requête HTTP** : Visiteur arrive sur `/?` (ou `/index.php`)
 2. **Routing WordPress** : WordPress détermine que la page d'accueil affiche les posts récents (comportement WP, hors dépôt — `HYPOTHÈSE`)
-3. **Sélection du template** : WordPress sélectionne `index.php` (seul template présent, `VÉRIFIÉ_CODE`). Que WordPress sélectionne effectivement ce template pour tous les types de contenu dépend de la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`)
+3. **Sélection du template** : WordPress cherche un template selon sa hiérarchie (hors dépôt — `HYPOTHÈSE`). `index.php` est le seul template présent dans ce dépôt (`VÉRIFIÉ_CODE`), donc il s'en rapproche comme candidat potentiel. Que WordPress sélectionne effectivement ce template pour l'accueil dépend de la hiérarchie WordPress et des templates éventuellement présents hors dépôt (`HYPOTHÈSE`)
 4. **Rendu du gabarit** (`VÉRIFIÉ_CODE` pour la structure) :
    - `get_header()` → inclut `header.php` (`PROUVÉ_CODE`), produit doctype + head + `<body>` + en-tête
    - Boucle (`have_posts()` + `while` + `the_post()`) → pour chaque post : titre + contenu (appels `PROUVÉ_CODE` en `index.php:3-10`, contenu généré et filtré par WordPress — `HYPOTHÈSE_EFFET`)
@@ -236,7 +236,7 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
 
 1. **Requête HTTP** : Visiteur clique sur `/2026/08/mon-article/` (ou équivalent)
 2. **Routing WordPress** : WordPress résout l'URL, charge le post correspondant dans `$post` global
-3. **Sélection du template** : WordPress cherche `single.php` → absent dans ce dépôt (`VÉRIFIÉ_CODE`) → fallback à `index.php` (hiérarchie WP, `HYPOTHÈSE` — hors dépôt)
+3. **Sélection du template** : WordPress cherche un template selon sa hiérarchie. `single.php` est absent dans ce dépôt (`VÉRIFIÉ_CODE`). Selon la hiérarchie WordPress (hors dépôt — `HYPOTHÈSE`), WordPress pourrait sélectionner un autre template, un template hors dépôt, ou un fallback. Seul `index.php` est présent dans ce dépôt, mais son sélection réelle dépend de la hiérarchie WordPress (`HYPOTHÈSE`)
 4. **Rendu** : identique au scénario 1 (gabarit unique)
    - Titre : `the_title()` = titre de l'article
    - Contenu : `the_content()` = corps de l'article
@@ -264,7 +264,7 @@ Le thème Shift Pilot est une couche de présentation minimaliste pour WordPress
 
 ### Vérifications internes au thème
 
-✅ **Sorties échappées** : tous les appels `the_*()` et `bloginfo()` sont des API WordPress qui appliquent leur filtre — pas d'`echo` brut de variable (`VÉRIFIÉ_CODE`)
+✅ **Pas d'échappement manuel du thème** : le thème appelle uniquement les API WordPress natives (`the_title()`, `the_content()`, `bloginfo()`) — pas d'`echo` brut de variable utilisateur (`VÉRIFIÉ_CODE`). Le filtrage et l'échappement réels dépendent du cœur WordPress (`HYPOTHÈSE_EFFET` — hors dépôt).
 
 ✅ **Pas de secrets** : aucune clé API, token, mot de passe dans le code (`VÉRIFIÉ_CODE`)
 

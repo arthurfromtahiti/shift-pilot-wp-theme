@@ -16,7 +16,7 @@ Le thème porte trois responsabilités techniques distinctes, sans hiérarchie m
 
 | Domaine | Description | Criticité | Confiance | Points d'attention |
 |---|---|---|---|---|
-| **rendu-gabarits-theme** | Assemblage du document HTML, boucle de contenu WordPress | Cœur | high | Gabarit unique pour toutes les URLs — pas de `404.php`, `single.php`, `archive.php` |
+| **rendu-gabarits-theme** | Assemblage du document HTML, boucle de contenu WordPress | Cœur | high | Un seul template (`index.php`) versionné — aucun `404.php`, `single.php`, `archive.php` dans le dépôt ; sélection du template dépend de la hiérarchie WordPress (hors dépôt) et de templates éventuels hors dépôt |
 | **amorcage-theme** | Déclaration des capacités WordPress (`title-tag`, `post-thumbnails`) | Support | high | `post-thumbnails` déclaré, jamais consommé par les templates |
 | **assets-front** | Chargement feuille de style + jQuery 1.12.4 depuis CDN externe | Support | high | jQuery old + CDN externe sans SRI ; cache-buster manuel sur la feuille de style |
 
@@ -79,7 +79,7 @@ Ces éléments **existent** sur le site réel mais ne sont **pas versionné** da
 **Incertitudes clés** :
 - Le site est-il réellement en production avec WooCommerce actif, ou le thème reste-t-il un pilote ?
 - D'autres templates (`single.php`, `404.php`) existent-ils côté FTP hors dépôt ?
-- Yoast SEO génère-t-il le bon code HTTP 404, malgré le `<p>Aucun contenu.</p>` du thème ?
+- Quel code HTTP est retourné pour les URLs inexistantes ? (WordPress et les plugins plugins gèrent cela hors dépôt — `HYPOTHÈSE`)
 
 ---
 

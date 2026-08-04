@@ -220,33 +220,35 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
 
 ---
 
-## Test #7 : Title-tag (balise `<title>`)
+## Test #7 : Title-tag (balise `<title>`) — OBSERVATION WORDPRESS
 
-**Objectif** : vérifier que WordPress gère la balise `<title>` (déclaration `add_theme_support('title-tag')`).
+**Objectif** : observer que le thème déclare `add_theme_support('title-tag')` et que WordPress injecte la balise `<title>`.
+
+**⚠️ NOTE** : le contenu exact de `<title>` est généré par WordPress (cœur WP), hors dépôt du thème. Ce test valide seulement la présence et la dynamique de la balise, pas son contenu.
 
 ### Étapes
 
 1. **DevTools** → **Elements** → inspecter `<head>` :
-   - [ ] Balise `<title>` présente
-   - [ ] Contenu non vide (ex. `<title>Accueil — Mon Site WordPress</title>`)
+   - [ ] Balise `<title>` présente (non absente)
+   - [ ] Contenu non vide (ex. `<title>Accueil — Mon Site WordPress</title>` — le contenu exact dépend de WordPress)
 
 2. **Navigateur** → onglet du site :
-   - [ ] Titre de l'onglet affiche le contenu de la balise `<title>`
+   - [ ] Onglet affiche un titre (observation que WordPress a injecté la balise)
 
 3. **Changer de page** (aller à un article) :
-   - [ ] Onglet change : affiche le titre de l'article
-   - [ ] `<title>` dans DevTools est mis à jour
+   - [ ] Onglet change : affiche un titre différent (observation que WordPress met à jour dynamiquement)
+   - [ ] `<title>` dans DevTools est modifié
 
-4. **Comportement attendu** (généré par WordPress, hors dépôt — observation seulement) :
-   - [ ] Accueil : titre de l'accueil ou nom du site (WordPress)
-   - [ ] Article : titre de l'article (WordPress)
-   - [ ] Page vide/404 : title dépend de WordPress et des plugins — non vérifiable depuis ce thème seul
+4. **Observation du contenu** (généré par WordPress, hors dépôt — ne pas valider) :
+   - ℹ️ Accueil : titre de l'accueil ou nom du site (généré par WordPress)
+   - ℹ️ Article : titre de l'article (généré par WordPress)
+   - ℹ️ Page vide/404 : title dépend de WordPress et des plugins — non vérifiable depuis ce thème seul
 
 ### Critères de passage
 
-✅ **Succès** : `<title>` dynamique, changé selon le contexte de page.
+✅ **Succès** : balise `<title>` présente et dynamique (change de page en page).
 
-❌ **Échec** : `<title>` absent, vide ou statique (ne change pas de page en page).
+⚠️ **Observation** : contenu exact de `<title>` = responsabilité du cœur WordPress, vérifiable via l'admin WordPress (Paramètres → Titre du site) ou via les plugins SEO.
 
 ---
 
@@ -304,32 +306,36 @@ Ce document liste les parcours à tester pour valider le bon fonctionnement du t
 
 ---
 
-## Test #10 : Classe CSS contextuelles
+## Test #10 : Classe CSS contextuelles — OBSERVATION WORDPRESS
 
-**Objectif** : vérifier que `post_class()` et `body_class()` appliquent des classes contextuelles utilisables en CSS.
+**Objectif** : observer que le thème appelle `post_class()` et `body_class()` qui génèrent des classes contextuelles.
+
+**⚠️ NOTE** : le contenu exact des classes est généré par WordPress selon la configuration du site (type de post, statut, etc.), hors dépôt du thème. Ce test valide seulement que les appels fonctionnent, pas le contenu exact.
 
 ### Étapes
 
 1. **Page d'accueil** → DevTools → inspecter `<body>` :
-   - [ ] Classes présentes (ex. `<body class="home blog logged-in ...">` — classe exacte dépend de WordPress et configuration du site)
-   - [ ] Classe `home` ou équivalent présente (spécifique à l'accueil)
+   - [ ] Attribut `class` présent (non absent)
+   - ℹ️ Classes possibles (ex. `home blog logged-in ...` — générées par WordPress selon configuration)
+   - ℹ️ Classe `home` ou équivalent probable (spécifique à l'accueil, selon WordPress)
 
 2. **Article** → DevTools → inspecter `<body>` :
-   - [ ] Classes indicatrices de type de page (ex. `single`, `single-post`) — générées par WordPress selon le contexte
-   - [ ] Classe statut visible (ex. `status-publish`) — dépend du post
+   - [ ] Attribut `class` présent et différent de l'accueil (observation que WordPress adapte les classes au contexte)
+   - ℹ️ Classes probables (ex. `single`, `single-post`) — dépendantes du type de post
+   - ℹ️ Classe statut (ex. `status-publish`) — dépendante du post
 
 3. **Article** → DevTools → inspecter `<article>` :
-   - [ ] Attribut `class` présent avec classes générées par `post_class()` (ex. `post-123 type-post status-publish` — le numéro et les classes varient selon le contenu)
-   - [ ] Classe unique par article (ex. `post-123`, où 123 est l'ID du post)
+   - [ ] Attribut `class` présent (non absent)
+   - ℹ️ Classes générées par `post_class()` (ex. `post-123 type-post status-publish` — le numéro et les classes varient selon le post réel)
 
 4. **CSS** (si utilisé pour styliser des types de posts différemment) :
-   - [ ] Classes appliquées permettent une stylisation contextualisée (ex. `body.single .site-header` vs `body.home .site-header`)
+   - ℹ️ Les classes permettraient une stylisation contextualisée (ex. `body.single .site-header` vs `body.home .site-header`), dépendante de WordPress
 
 ### Critères de passage
 
-✅ **Succès** : classes contextuelles présentes, différentes selon le type de page/article.
+✅ **Succès** : attributs `class` présents sur `<body>` et `<article>`, non vides.
 
-❌ **Échec** : aucune classe, ou classes invariantes (même sur toutes les pages).
+⚠️ **Observation** : contenu exact des classes = responsabilité du cœur WordPress, dépendant du type de post, du statut, de la configuration du site.
 
 ---
 
@@ -454,10 +460,10 @@ Pour une recette rigoureuse (avant mise en production) :
 - [ ] Test #13 (cache-buster si modification)
 - [ ] Logs serveur vérifiés (aucune erreur PHP, aucune erreur 500)
 
-**Hors périmètre thème** — vérification optionnelle si plugins actifs (comportement non garanti par ce dépôt) :
-- [ ] WooCommerce (si actif) : page boutique s'affiche, panier fonctionne (e-commerce = hors dépôt)
-- [ ] Contact Form 7 (si actif) : formulaire s'affiche, soumission fonctionne (plugin = hors dépôt)
-- [ ] Yoast SEO (si actif) : aucune alerte majeure sur le SEO (plugin = hors dépôt)
+**Hors périmètre thème** — vérifications optionnelles d'environnement si plugins actifs (non du dépôt, pas critères de passage pour le thème) :
+- ℹ️ WooCommerce (si actif) : page boutique s'affiche-t-elle ? Panier fonctionne-t-il ? (e-commerce = géré hors dépôt)
+- ℹ️ Contact Form 7 (si actif) : formulaire s'affiche-t-il ? Soumission fonctionne-t-elle ? (plugin = géré hors dépôt)
+- ℹ️ Yoast SEO (si actif) : alertes majeures détectées ? (plugin = géré hors dépôt)
 
 ---
 

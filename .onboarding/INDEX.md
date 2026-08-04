@@ -1,5 +1,9 @@
 # Index d'onboarding — shift-pilot-wp-theme
 
+## Chaîne d'onboarding (amont → production)
+
+### Amont validé (3 domaines, 3 workflows, 6 audits)
+
 | type | domaine | workflow | dépôt | fichier | date | version SHA | niveau de preuve | titre |
 |---|---|---|---|---|---|---|---|---|
 | domaine | rendu-gabarits-theme, amorcage-theme, assets-front | | shift-pilot-wp-theme | domaines/CARTE_DES_DOMAINES.md | 2026-08-04 | 34dfbfd059787ffcf427c1323b2c985ae51da911 | contient une hypothèse | Carte des domaines du thème WordPress pilote — 3 responsabilités techniques, hors-périmètre documenté |
@@ -17,4 +21,23 @@
 | journal-fabrication | amorcage-theme | INITIALISATION_THEME | shift-pilot-wp-theme | relectures/RELECTURE_WORKFLOW_INITIALISATION_THEME.md | 2026-08-04 | df40eee98a884a3fc957ab5c0f7e22533ec5b37a | établi | Relecture du workflow d'initialisation du thème |
 | journal-fabrication | rendu-gabarits-theme | RENDU_PAGE_FRONT | shift-pilot-wp-theme | relectures/RELECTURE_WORKFLOW_RENDU_PAGE_FRONT.md | 2026-08-04 | 34dfbfd059787ffcf427c1323b2c985ae51da911 | établi | Relecture du workflow de rendu page front |
 
-> **Note technique** : les lignes `audit` ont leur `version SHA` marquées `(à compléter au commit)` car ces fichiers n'ont pas encore été committés. Les dates des artefacts antérieurs sont approximées (`2026-07-??`) faute d'horodatage lisible dans les SHAs. À mettre à jour avec `git log -1 --format="%cd" --date=short -- <fichier>` au moment du commit.
+### Étape 4 — Documents finalisés (synthèse pour utilisation & recette)
+
+| type | synthèse | dépôt | fichier | date | niveau de preuve | titre |
+|---|---|---|---|---|---|---|
+| document | contexte projet | shift-pilot-wp-theme | PROJECT_CONTEXT.md | 2026-08-04 | validé | Résumé exécutif — nature, domaines clés, points d'attention prioritaires |
+| document | cahier des charges | shift-pilot-wp-theme | CDC_FONCTIONNEL.md | 2026-08-04 | validé | Spécification fonctionnelle — ce que le thème fait, pour qui, selon quelles règles |
+| document | cartographie | shift-pilot-wp-theme | CARTOGRAPHIE_CODE.md | 2026-08-04 | validé | Structure technique — domaines → fichiers, points d'entrée, zones critiques |
+| document | plan de recette | shift-pilot-wp-theme | CAHIER_RECETTE.md | 2026-08-04 | validé | Parcours de test manuels — 13 tests + dépannage + checklist rapide |
+
+---
+
+## Notes de finalisation
+
+- **Confiance globale** : `high` sur le périmètre versionné (5 fichiers, ~70 lignes lues intégralement ; VÉRIFIÉ_CODE)
+- **Confiance partielle** : `medium` sur WordPress/plugins/base (hors dépôt, comportement présumé — HYPOTHÈSE)
+- **Perimètre** : seul le thème versionné. Cœur WordPress, base de données, plugins gérés hors dépôt (FTP) — documenté comme hors périmètre
+- **Quatre documents de référence** produits selon normes socle-onboarding + socle-agence — prêts pour utilisation par une IA ou un développeur
+- **Synthèse amont versionnée** dans `.onboarding/` — artefacts workflows/audits disponibles pour consultation approfondie
+
+> **Version SHA à mettre à jour au commit** : chaque document porte la date 2026-08-04 et sera marqué de son SHA au moment du dépôt.

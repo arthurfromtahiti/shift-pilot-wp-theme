@@ -2,7 +2,7 @@
 <html <?php language_attributes(); ?>>
 <head>
   <meta charset="<?php bloginfo('charset'); ?>">
-  <script src="<?php echo get_template_directory_uri(); ?>/assets/slider.js"></script>
+  <script src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/slider.js" defer></script>
   <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
@@ -12,5 +12,5 @@
   <?php else : ?>
     <p class="site-name"><a href="<?php echo esc_url(home_url('/')); ?>"><?php bloginfo('name'); ?></a></p>
   <?php endif; ?>
-  <img src="<?php echo get_template_directory_uri(); ?>/assets/logo.png">
+  <img src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/logo.png" alt="<?php bloginfo('name'); ?>">
 </header>

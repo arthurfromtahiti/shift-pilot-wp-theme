@@ -8,7 +8,7 @@
         <h1><?php the_title(); ?></h1>
       <?php endif; ?>
       <?php if (has_post_thumbnail()) : ?>
-        <?php the_post_thumbnail('full'); ?>
+        <?php the_post_thumbnail('full', ['alt' => get_the_title()]); ?>
       <?php endif; ?>
       <div><?php the_content(); ?></div>
     </article>

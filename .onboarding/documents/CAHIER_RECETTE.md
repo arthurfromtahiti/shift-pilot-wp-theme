@@ -270,41 +270,42 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
 
 ---
 
-## Test #8 : Images mises en avant — LIMITATION DOCUMENTÉE
+## Test #8 : Images mises en avant (vignettes)
 
-**Objectif** : documenter l'incohérence entre la capacité déclarée et son absence de consommation dans le thème.
+**Objectif** : vérifier que les images mises en avant s'affichent sous condition `has_post_thumbnail()` et que l'attribut `alt` est renseigné.
 
-**⚠️ LIMITATION CONNUE** : le thème déclare `add_theme_support('post-thumbnails')` mais ne l'utilise jamais dans le rendu (`PROUVÉ_CODE`). Les images mises en avant chargées via l'admin WordPress ne s'afficheront pas sur le site.
+**Note sur l'attribut `alt`** : le thème impose `get_the_title()` (titre du post) comme texte alternatif (`index.php:11` — `PROUVÉ_CODE`). Si l'éditeur a défini un texte alternatif distinct dans la médiathèque WordPress (champ `_wp_attachment_image_alt`), ce texte est ignoré — le titre du post prend toujours le dessus. Comportement délibéré et documenté.
 
-### Prérequis (optionnel)
+### Prérequis
 
-- Au moins un article avec une image mise en avant (pour observer l'incohérence)
+- Au moins un article **avec** une image mise en avant, et un article **sans** image mise en avant (pour tester la condition)
 
 ### Étapes
 
 1. **Vérification locale du code** :
-   - [ ] Lire `functions.php:9` : déclare bien `add_theme_support('post-thumbnails')` (`PROUVÉ_CODE`)
-   - [ ] Lire `index.php` : aucun appel à `the_post_thumbnail()` présent (`PROUVÉ_CODE` — vérifiable par recherche)
-   - **Conclusion locale** : l'incohérence est confirmée dans le code.
+   - [ ] Lire `functions.php:9` : déclare `add_theme_support('post-thumbnails')` (`PROUVÉ_CODE`)
+   - [ ] Lire `index.php:10` : condition `has_post_thumbnail()` présente (`PROUVÉ_CODE`)
+   - [ ] Lire `index.php:11` : appel `the_post_thumbnail('full', ['alt' => get_the_title()])` (`PROUVÉ_CODE`)
+   - **Conclusion locale** : le thème affiche la vignette si une image mise en avant est définie, avec un `alt` non vide.
 
-2. **Observation frontend** (optionnelle, si article avec image existe) :
-   - [ ] Admin WordPress → article avec image mise en avant : le champ « Image mise en avant » est visible (effet de la déclaration)
-   - [ ] Frontend → article : chercher une balise `<img>` pour la vignette — aucune ne s'affiche (effet de l'absence d'appel à `the_post_thumbnail()`)
-   - ℹ️ Les images chargées par les éditeurs ne sont jamais affichées aux visiteurs
+2. **Article avec image mise en avant** — observation frontend :
+   - [ ] ✅ Balise `<img>` avec attribut `alt` non vide visible dans le rendu HTML (DevTools → Elements)
+   - [ ] ✅ Valeur de `alt` correspond au titre du post (et non à l'alt médiathèque si différent)
+   - [ ] ✅ Image visible visuellement sur la page
 
-3. **Observation de conflit d'attentes** :
-   - ℹ️ Éditeurs voient le champ et ajoutent des images → attente d'affichage
-   - ℹ️ Les images ne s'affichent jamais → déception UX
+3. **Article sans image mise en avant** :
+   - [ ] ✅ Aucune balise `<img>` de vignette générée — la condition `has_post_thumbnail()` retourne false (`PROUVÉ_CODE`)
+   - [ ] ✅ Pas d'image cassée ni d'attribut `src` vide
+
+4. **Attribut `alt`** (accessibilité + SEO) :
+   - [ ] ✅ `alt` présent et non vide sur chaque vignette affichée (`index.php:11` — `PROUVÉ_CODE`)
+   - [ ] ℹ️ Valeur = `get_the_title()` — si l'éditeur a défini un `alt` distinct dans la médiathèque, il est ignoré (comportement du thème, voir note ci-dessus)
 
 ### Statut de validation
 
-⚠️ **Incohérence documentée** : c'est une limitation intentionnelle ou un oubli (à clarifier avec le product owner).
+✅ **Fonctionnalité documentée** : vignettes affichées sous condition `has_post_thumbnail()`, `alt` toujours renseigné via `get_the_title()` (`index.php:10-12` — `PROUVÉ_CODE`).
 
-✅ **Résolution attendue** :
-   - **Option 1** : retirer `add_theme_support('post-thumbnails')` de `functions.php:9` (si images jamais affichées)
-   - **Option 2** : ajouter un appel à `the_post_thumbnail()` dans `index.php` (si consommation souhaitée)
-
-ℹ️ Voir questions pour le product owner (CDC_FONCTIONNEL.md) pour clarifier l'intention.
+ℹ️ **Règle `alt`** : `get_the_title()` impose le titre du post — alternative correcte par rapport à l'absence d'`alt`, mais diffère de l'alt médiathèque si l'éditeur en a défini un plus descriptif.
 
 ---
 

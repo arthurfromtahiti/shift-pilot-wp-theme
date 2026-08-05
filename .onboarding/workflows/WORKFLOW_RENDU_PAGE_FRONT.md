@@ -29,14 +29,17 @@ Produire le document HTML lorsque `index.php` est invoqué par WordPress. Le th�
    - Doctype HTML5, balise `<html>` avec `language_attributes()` (`header.php:1-2`)
    - `<head>` avec charset (`bloginfo('charset')`, `header.php:4`) et `wp_head()` (`header.php:5`) — point d'injection des assets (CSS, titre, meta, scripts en head)
    - Fermeture `</head>`, ouverture `<body>` avec `body_class()` (`header.php:7`)
-   - Chrome en-tête : `<header class="site-header"><h1>` avec `bloginfo('name')` — nom du site WP (`header.php:8`)
+   - Chrome en-tête : `<header class="site-header">` avec, selon le contexte (`header.php:10-14`) :
+     - **Page d'accueil** (`is_front_page()`) : `<h1>bloginfo('name')</h1>` — nom du site en H1
+     - **Autres pages** : `<p class="site-name"><a href="esc_url(home_url('/'))">bloginfo('name')</a></p>` — lien vers l'accueil, sans H1
 3. **Ouverture `<main class="site-content">`** (`index.php:2`)
 4. **Boucle WordPress** (`index.php:3-10`) :
    - `have_posts()` (`index.php:3`) — WordPress vérifie si des posts correspondent à la requête courante
    - **Si des posts existent** : pour chaque post, `the_post()` → rendu d'un `<article>` avec :
      - `post_class()` (`index.php:4`) — classes CSS générées par WordPress selon le type/statut du post
-     - `<h2>` + `the_title()` (`index.php:5`) — titre du post
-     - `<div>` + `the_content()` (`index.php:6`) — corps du post (HTML filtré par WordPress)
+     - **Page d'accueil** : `<h2>` + `the_title()` (`index.php:5-9`) — titre affiché en H2 (H1 dans l'en-tête)
+     - **Autres pages** : `<h1>` + `the_title()` (`index.php:5-9`) — titre affiché en H1 sémantique (pas de H1 dans l'en-tête)
+     - `<div>` + `the_content()` (`index.php:10`) — corps du post (HTML filtré par WordPress)
    - **Si aucun post** : affichage de `<p>Aucun contenu.</p>` (`index.php:9`)
 5. **Fermeture `</main>`** (`index.php:11`)
 6. **Appel `get_footer()`** (`index.php:12`) — WordPress inclut `footer.php` :

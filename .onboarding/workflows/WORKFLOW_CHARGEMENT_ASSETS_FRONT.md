@@ -32,11 +32,11 @@ Enregistrer et mettre en file d'attente les deux ressources que le thème décla
    - URL : `get_template_directory_uri() . '/assets/slider.js'` — script local au thème
    - Version : `'1.0.0'`
    - Dépendances : `[]` (aucune — le slider est vanilla JS pur, vérifié par lecture de `assets/slider.js` : `document.addEventListener`, `querySelectorAll`, `classList` — aucune dépendance jQuery)
-   - Position : `true` → chargé **en footer** (`wp_footer()`) — non bloquant pour le parsing HTML
+   - Position : `['in_footer' => true, 'strategy' => 'defer']` → chargé **en footer avec `defer`** (`wp_footer()`) — non bloquant pour le parsing HTML ; sur WP 6.3+, WordPress émet l'attribut `defer` sur la balise `<script>`
 4. **Points d'injection dans le HTML** : `wp_head()` est appelé en `header.php:6` et `wp_footer()` en `footer.php:2` — ce sont les points d'injection standard WordPress pour les assets enregistrés via l'API d'enqueue. L'émission effective des balises `<link>` et `<script>` relève du cœur WordPress (hors dépôt).
 
 ## Règles métier
-- **Slider chargé en footer, sans dépendance jQuery** : `shift-pilot-slider` est déclaré avec `in_footer = true` et `deps = []`. Le script `assets/slider.js` est vanilla JS pur — aucune dépendance jQuery requise ou déclarée (`VÉRIFIÉ_CODE`).
+- **Slider chargé en footer avec `defer`, sans dépendance jQuery** : `shift-pilot-slider` est déclaré avec `['in_footer' => true, 'strategy' => 'defer']` et `deps = []`. Le script `assets/slider.js` est vanilla JS pur — aucune dépendance jQuery requise ou déclarée (`VÉRIFIÉ_CODE`). Sur WP < 6.3, le cinquième argument tableau est interprété comme `$in_footer` (tableau non vide = `true` en PHP) — le slider reste en footer mais sans l'attribut `defer` (dégradation silencieuse, sans erreur).
 - **Cache-busting manuel** : le numéro de version `'1.0.2'` dans `wp_enqueue_style` (`functions.php:13`) est transmis au cœur WordPress comme paramètre de version ; WordPress l'ajoute sous forme de suffixe d'URL de type `?ver=…` (comportement du cœur WP, hors dépôt). Toute modification de `style.css` sans mise à jour de ce numéro peut ne pas être visible pour les visiteurs dont le navigateur ou un CDN intermédiaire a mis en cache l'ancienne version.
 
 ## Données
@@ -45,12 +45,14 @@ Enregistrer et mettre en file d'attente les deux ressources que le thème décla
 ## Risques
 - **Cache-buster non automatique** : un fichier `style.css` modifié sans mise à jour du numéro `'1.0.2'` dans `functions.php:13` peut rester en cache chez les visiteurs et dans des CDN intermédiaires éventuels. Impact conditionnel : selon la configuration du navigateur ou d'un CDN intermédiaire, les modifications CSS risquent de ne pas être visibles en production avant l'expiration du cache.
 - **Slider.js en footer uniquement** : tout code inline appelant les fonctionnalités du slider avant `wp_footer()` (dans un template ou un plugin) pourrait ne pas trouver le script initialisé. Scénario : `HYPOTHÈSE` (le thème ne contient aucun tel appel inline — `VÉRIFIÉ_CODE`).
+- **`strategy: defer` requiert WP 6.3+** : sur WordPress < 6.3, le cinquième argument de `wp_enqueue_script` est interprété comme `$in_footer` (tableau non vide = `true` en PHP) — le slider reste chargé en footer mais sans l'attribut `defer`. Dégradation silencieuse sans erreur PHP. Version WordPress du serveur : `INCONNU`.
 
 ## Questions ouvertes
 - Le site dispose-t-il d'un CDN intermédiaire (Cloudflare, etc.) qui peut également mettre en cache `style.css` ? Si oui, le cache-busting par `?ver=` peut être insuffisant selon la configuration du CDN. Statut : `INCONNU`.
 
 ## Preuves
 - `functions.php:12-21` — lu intégralement : `VÉRIFIÉ_CODE`
+- `functions.php:19` — `['in_footer' => true, 'strategy' => 'defer']` : stratégie `defer` ajoutée (SHIAAAAAAAAAAAAAAAAAAAAAAAA-269) : `VÉRIFIÉ_CODE`
 - `header.php:6` — `wp_head()` confirmé comme point d'injection CSS : `VÉRIFIÉ_CODE`
 - `footer.php:2` — `wp_footer()` confirmé comme point d'injection JS : `VÉRIFIÉ_CODE`
 - `style.css:6` — `Version: 1.0.2` confirmé comme valeur du cache-buster : `VÉRIFIÉ_CODE`

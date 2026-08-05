@@ -7,6 +7,10 @@
 </head>
 <body <?php body_class(); ?>>
 <header class="site-header">
-  <h1><?php bloginfo('name'); ?></h1>
+  <?php if (is_front_page()) : ?>
+    <h1><?php bloginfo('name'); ?></h1>
+  <?php else : ?>
+    <p class="site-name"><a href="<?php echo esc_url(home_url('/')); ?>"><?php bloginfo('name'); ?></a></p>
+  <?php endif; ?>
   <img src="<?php echo get_template_directory_uri(); ?>/assets/logo.png">
 </header>

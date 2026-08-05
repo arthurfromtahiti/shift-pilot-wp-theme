@@ -16,6 +16,6 @@ add_action('wp_enqueue_scripts', function () {
         get_template_directory_uri() . '/assets/slider.js',
         [],
         '1.0.0',
-        true
+        ['in_footer' => true, 'strategy' => 'defer']
     );
 });

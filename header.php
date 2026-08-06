@@ -12,5 +12,5 @@
   <?php else : ?>
     <p class="site-name"><a href="<?php echo esc_url(home_url('/')); ?>"><?php bloginfo('name'); ?></a></p>
   <?php endif; ?>
-  <img src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/logo.png" alt="<?php bloginfo('name'); ?>" width="200" height="60">
+  <img src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/logo.png" alt="<?php echo esc_attr(get_bloginfo('name')); ?>" width="200" height="60">
 </header>

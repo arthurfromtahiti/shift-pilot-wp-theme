@@ -7,7 +7,7 @@
 </head>
 <body <?php body_class(); ?>>
 <header class="site-header">
-  <?php if (is_front_page()) : ?>
+  <?php if (!is_singular()) : ?>
     <h1><?php bloginfo('name'); ?></h1>
   <?php else : ?>
     <p class="site-name"><a href="<?php echo esc_url(home_url('/')); ?>"><?php bloginfo('name'); ?></a></p>

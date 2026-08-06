@@ -75,13 +75,13 @@ Ce document liste les parcours de test pour valider le bon fonctionnement du th�
 1. **Navigateur** : cliquer sur un article depuis la page d'accueil (ex. `/blog/mon-article/` — structure d'URL dépend de WordPress et du site réel, peut varier)
 2. **Inspection visuelle** :
    - [ ] Page s'affiche sans erreur
-   - [ ] 🔍 **Observation** : Titre de l'article visible en `<h1>` sur les pages intérieures, en `<h2>` sur la page d'accueil (rendu via `the_title()` — `index.php:5-9` — `PROUVÉ_CODE`) ; contenu du titre généré par WordPress
+   - [ ] 🔍 **Observation** : Titre de l'article visible en `<h1>` sur les vues singulières (post, page individuelle), en `<h2>` sur les vues liste (accueil, archives, pagination, catégorie, recherche) (rendu via `the_title()` — `index.php:5-9` — `PROUVÉ_CODE`) ; contenu du titre généré par WordPress
    - [ ] ✅ Contenu de l'article visible (via `the_content()` — `index.php:6` — `PROUVÉ_CODE` ; filtrage et shortcodes exécutés par WordPress — `HYPOTHÈSE_EFFET`)
    - [ ] 🔍 **Observation** : Caractères correctement échappés, aucune balise HTML cassée — le thème appelle l'API `the_content()` (`PROUVÉ_CODE`) ; les filtres d'échappement et de sécurité sont appliqués par WordPress (`HYPOTHÈSE_EFFET`)
    - [ ] ✅ Chrome (en-tête/pied) identique à la page d'accueil — structure de gabarit unique (`PROUVÉ_CODE`)
 
 3. **DevTools** → **Inspector** → éléments du contenu :
-   - [ ] ✅ Balise `<h1>` contient le titre du post sur les pages intérieures (balise `<h2>` sur la page d'accueil) — validé au-dessus
+   - [ ] ✅ Balise `<h1>` contient le titre du post sur les vues singulières (balise `<h2>` sur les vues liste) — validé au-dessus
    - [ ] 🔍 **Observation** : Classe `post_class()` appliquée (ex. `<article class="post-123 type-post status-publish">`) — le thème appelle `post_class()` (`index.php:4` — `PROUVÉ_CODE`) ; contenu des classes généré par WordPress selon contexte (`HYPOTHÈSE_EFFET`)
    - [ ] ✅ Contenu rendu par la boucle WordPress (via `have_posts()` + `the_post()` — `index.php:3-10` — `PROUVÉ_CODE`)
 
